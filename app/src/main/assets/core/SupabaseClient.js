@@ -1,7 +1,10 @@
-// CCOS Supabase Database & Auth Integration Engine
+// CCOS Supabase Database & Auth Integration Engine with Username Debouncer & RLS Support
 CommCoach.Supabase = {
   client: null,
   isInitialized: false,
+  usernameCache: new Map(),
+  usernameTimeout: null,
+  debounceDelay: 500,
 
   init() {
     // Live Supabase parameters
@@ -54,8 +57,30 @@ CommCoach.Supabase = {
   },
 
   /**
-   * 11.2.9 Username Registry - Check availability
+   * 11.2.9 Username Registry - Check availability with client format validation & 500ms debouncing (Issue 7)
    */
+  checkUsernameAvailabilityDebounced(username, callback) {
+    if (this.usernameTimeout) clearTimeout(this.usernameTimeout);
+
+    // Client-side regex format validation first (Issue 7)
+    if (!/^[a-z0-9_.]{3,30}$/i.test(username)) {
+      if (typeof callback === 'function') callback(false, "Username must be 3-30 alphanumeric characters");
+      return;
+    }
+
+    const clean = username.toLowerCase().trim();
+    if (this.usernameCache.has(clean)) {
+      if (typeof callback === 'function') callback(this.usernameCache.get(clean));
+      return;
+    }
+
+    this.usernameTimeout = setTimeout(async () => {
+      const isAvailable = await this.checkUsernameAvailability(clean);
+      this.usernameCache.set(clean, isAvailable);
+      if (typeof callback === 'function') callback(isAvailable);
+    }, this.debounceDelay);
+  },
+
   async checkUsernameAvailability(username) {
     if (!this.isInitialized || !this.client || !username) return true;
 

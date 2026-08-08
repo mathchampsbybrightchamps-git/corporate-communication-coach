@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -27,6 +28,7 @@ import kotlin.concurrent.thread
 import org.json.JSONObject
 import org.json.JSONArray
 import java.util.Locale
+import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
 
@@ -209,7 +211,7 @@ class MainActivity : AppCompatActivity() {
                     val scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, scaleWidth, scaleHeight, true)
 
                     val byteArrayOutputStream = ByteArrayOutputStream()
-                    scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 60, byteArrayOutputStream)
+                    scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream)
                     val byteArray = byteArrayOutputStream.toByteArray()
                     val base64Image = android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP)
 
@@ -254,28 +256,56 @@ class MainActivity : AppCompatActivity() {
 
         @JavascriptInterface
         fun processOCRImage(base64Data: String, targetLang: String, jsCallbackMethod: String) {
-            val cleanBase64 = if (base64Data.contains(",")) base64Data.split(",")[1] else base64Data
-            val promptText = "Perform high accuracy OCR text extraction on this image. Extract all readable text present in the image word for word. Then translate the extracted text into target language code '$targetLang'. Respond in JSON format: {\"detected\":\"[Exact extracted original text]\",\"translated\":\"[Translation in $targetLang]\"}"
-            
-            val partsArray = JSONArray().apply {
-                put(JSONObject().put("text", promptText))
-                put(JSONObject().put("inline_data", JSONObject().apply {
-                    put("mime_type", "image/jpeg")
-                    put("data", cleanBase64)
-                }))
-            }
+            try {
+                val cleanBase64 = if (base64Data.contains(",")) base64Data.split(",")[1] else base64Data
+                
+                // Decode & Auto-compress large images to max 1024x1024 to prevent Gemini API timeouts
+                val decodedBytes = android.util.Base64.decode(cleanBase64, android.util.Base64.DEFAULT)
+                val originalBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
 
-            val contentsArray = JSONArray().apply {
-                put(JSONObject().put("parts", partsArray))
-            }
+                val compressedBase64 = if (originalBitmap != null && (originalBitmap.width > 1024 || originalBitmap.height > 1024)) {
+                    val maxDim = 1024
+                    val ratio = Math.min(maxDim.toDouble() / originalBitmap.width, maxDim.toDouble() / originalBitmap.height)
+                    val targetW = (originalBitmap.width * ratio).toInt()
+                    val targetH = (originalBitmap.height * ratio).toInt()
 
-            val json = JSONObject().apply {
-                put("contents", contentsArray)
-            }
+                    val resized = Bitmap.createScaledBitmap(originalBitmap, targetW, targetH, true)
+                    val stream = ByteArrayOutputStream()
+                    resized.compress(Bitmap.CompressFormat.JPEG, 70, stream)
+                    android.util.Base64.encodeToString(stream.toByteArray(), android.util.Base64.NO_WRAP)
+                } else {
+                    cleanBase64
+                }
 
-            val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-            sendPostRequest(url, json.toString()) { response ->
-                sendBase64ToJs(jsCallbackMethod, response)
+                val promptText = "Perform high accuracy OCR text extraction on this image. Extract all readable text present in the image word for word. Then translate the extracted text into target language code '$targetLang'. Respond in JSON format: {\"detected\":\"[Exact extracted original text]\",\"translated\":\"[Translation in $targetLang]\"}"
+                
+                val partsArray = JSONArray().apply {
+                    put(JSONObject().put("text", promptText))
+                    put(JSONObject().put("inline_data", JSONObject().apply {
+                        put("mime_type", "image/jpeg")
+                        put("data", compressedBase64)
+                    }))
+                }
+
+                val contentsArray = JSONArray().apply {
+                    put(JSONObject().put("parts", partsArray))
+                }
+
+                val json = JSONObject().apply {
+                    put("contents", contentsArray)
+                }
+
+                val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+                sendPostRequest(url, json.toString()) { response ->
+                    sendBase64ToJs(jsCallbackMethod, response)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("CommCoachBridge", "OCR Image Compression Error", e)
+                val errObj = JSONObject().apply {
+                    put("detected", "Image processing error. Please try taking another photo.")
+                    put("translated", "Error translating image.")
+                }
+                sendBase64ToJs(jsCallbackMethod, errObj.toString())
             }
         }
 
@@ -337,7 +367,13 @@ class MainActivity : AppCompatActivity() {
                     targetDir.mkdirs()
                 }
 
-                val file = java.io.File(targetDir, fileName)
+                // Add unique timestamp & UUID to prevent file naming collisions (Issue 11)
+                val namePart = fileName.substringBeforeLast(".")
+                val extPart = fileName.substringAfterLast(".", "txt")
+                val uuidSuffix = UUID.randomUUID().toString().take(6)
+                val uniqueFileName = "${namePart}_${uuidSuffix}.$extPart"
+
+                val file = java.io.File(targetDir, uniqueFileName)
                 file.writeText(content, Charsets.UTF_8)
 
                 android.util.Log.d("CommCoachBridge", "File saved: ${file.absolutePath}")
@@ -383,6 +419,8 @@ class MainActivity : AppCompatActivity() {
                     val conn = url.openConnection() as HttpURLConnection
                     conn.requestMethod = "POST"
                     conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+                    conn.connectTimeout = 30000 // 30-second timeout mitigation (Issue 1)
+                    conn.readTimeout = 30000
                     conn.doOutput = true
                     
                     val os = conn.outputStream

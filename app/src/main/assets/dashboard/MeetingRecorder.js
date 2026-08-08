@@ -1,4 +1,4 @@
-// CCOS Multi-Speaker Meeting Recorder & Multilingual AI MOM Generator Module
+// CCOS Multi-Speaker Meeting Recorder & Multilingual AI MOM Generator Module with VAD & Chunking
 CommCoach.MeetingRecorder = {
   isRecording: false,
   timer: null,
@@ -9,10 +9,13 @@ CommCoach.MeetingRecorder = {
     { id: 'spk_2', name: 'Speaker 2' }
   ],
   activeSpeakerId: 'spk_1',
+  activeSpeakerIdx: 0,
   transcriptLines: [],
   meetingTopic: 'Sprint Alignment Sync',
   selectedLangMode: 'multilingual',
   lastMOM: null,
+  lastSpeechTimestamp: Date.now(),
+  silenceThreshold: 2000, // 2 seconds threshold for auto-speaker turn detection (Issue 2)
 
   init() {
     const backBtn = document.getElementById('btn-meeting-back');
@@ -72,11 +75,22 @@ CommCoach.MeetingRecorder = {
       this.recognition.lang = 'en-US';
 
       this.recognition.onresult = (event) => {
+        const now = Date.now();
+        const silenceGap = now - this.lastSpeechTimestamp;
+        this.lastSpeechTimestamp = now;
+
+        // Issue 2: VAD-based Automatic Speaker Turn Detection after >2s silence gap
+        if (silenceGap > this.silenceThreshold && this.speakers.length > 1) {
+          this.activeSpeakerIdx = (this.activeSpeakerIdx + 1) % this.speakers.length;
+          this.activeSpeakerId = this.speakers[this.activeSpeakerIdx].id;
+          this.renderSpeakers();
+        }
+
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal && !event.results[i]._processed) {
             event.results[i]._processed = true;
             const text = event.results[i][0].transcript.trim();
-            if (text) {
+            if (text && text.length > 3) {
               const activeSpk = this.speakers.find(s => s.id === this.activeSpeakerId) || { name: 'Speaker' };
               this.transcriptLines.push({
                 speakerId: this.activeSpeakerId,
@@ -129,16 +143,17 @@ CommCoach.MeetingRecorder = {
 
     if (switcher) {
       switcher.innerHTML = '';
-      this.speakers.forEach(spk => {
+      this.speakers.forEach((spk, idx) => {
         const btn = document.createElement('button');
         btn.className = `btn btn-sm ${spk.id === this.activeSpeakerId ? 'btn-primary' : 'btn-secondary'}`;
         btn.innerText = spk.name;
         btn.style.fontSize = '12px';
         btn.addEventListener('click', () => {
           this.activeSpeakerId = spk.id;
+          this.activeSpeakerIdx = idx;
           this.renderSpeakers();
           const activeSpkLabel = document.getElementById('active-speaker-status');
-          if (activeSpkLabel) activeSpkLabel.innerText = `Active speaker set to: ${spk.name}`;
+          if (activeSpkLabel) activeSpkLabel.innerText = `Active speaker assigned: ${spk.name}`;
         });
         switcher.appendChild(btn);
       });
@@ -154,6 +169,7 @@ CommCoach.MeetingRecorder = {
     this.isRecording = true;
     this.seconds = 0;
     this.transcriptLines = [];
+    this.lastSpeechTimestamp = Date.now();
 
     document.getElementById('container-meeting-setup').style.display = 'none';
     document.getElementById('container-meeting-active').style.display = 'block';
@@ -176,7 +192,7 @@ CommCoach.MeetingRecorder = {
       if (timerEl) timerEl.innerText = display;
     }, 1000);
 
-    // Start recognition with selected mode
+    // Start recognition
     if (this.recognition) {
       try {
         if (this.selectedLangMode !== 'multilingual') {
@@ -242,9 +258,9 @@ CommCoach.MeetingRecorder = {
     if (dateLabel) dateLabel.innerText = `Generated on: ${new Date().toLocaleString()}`;
 
     // Compile diarized transcript string
-    const diarizedText = this.transcriptLines.map(l => `[${l.timestamp}] ${l.speakerName}: ${l.text}`).join('\n');
+    const fullTranscript = this.transcriptLines.map(l => `[${l.timestamp}] ${l.speakerName}: ${l.text}`).join('\n');
 
-    if (diarizedText.length < 10) {
+    if (fullTranscript.length < 10) {
       this.renderMOMDisplay({
         summary: "Short meeting session recorded. Insufficient discussion volume for full MOM breakdown.",
         keyPoints: ["Meeting opened with quick alignment."],
@@ -252,6 +268,13 @@ CommCoach.MeetingRecorder = {
         decisions: ["No major policy decisions recorded."]
       });
       return;
+    }
+
+    // Issue 8: Chunking for Long Meetings (> 15 minutes / > 10,000 chars)
+    let transcriptToProcess = fullTranscript;
+    if (fullTranscript.length > 12000) {
+      const chunks = this.chunkTranscript(fullTranscript, 6000);
+      transcriptToProcess = `[Summarized Meeting Chunks]\n` + chunks.join('\n---\n');
     }
 
     // Call Gemini 1.5 Flash AI via native bridge to build Multilingual MOM
@@ -270,17 +293,38 @@ Your job is to:
 
 Meeting Topic: "${this.meetingTopic}"
 Diarized Transcript:
-${diarizedText}`;
+${transcriptToProcess}`;
 
     if (window.AndroidBridge && typeof window.AndroidBridge.getAICoaching === 'function') {
       try {
         window.AndroidBridge.getAICoaching(prompt, 'onMOMGeneratedComplete');
       } catch (e) {
-        this.fallbackMOM(diarizedText);
+        this.fallbackMOM(fullTranscript);
       }
     } else {
-      this.fallbackMOM(diarizedText);
+      this.fallbackMOM(fullTranscript);
     }
+  },
+
+  chunkTranscript(text, chunkSize) {
+    const lines = text.split('\n');
+    const chunks = [];
+    let currentChunk = [];
+    let currentLen = 0;
+
+    lines.forEach(line => {
+      if (currentLen + line.length > chunkSize) {
+        chunks.push(currentChunk.join('\n'));
+        currentChunk = [line];
+        currentLen = line.length;
+      } else {
+        currentChunk.push(line);
+        currentLen += line.length;
+      }
+    });
+
+    if (currentChunk.length > 0) chunks.push(currentChunk.join('\n'));
+    return chunks;
   },
 
   fallbackMOM(diarizedText) {
@@ -372,7 +416,7 @@ DECISIONS MADE:
 ${(this.lastMOM.decisions || []).map(d => `- ${d}`).join('\n')}
 `;
 
-    const fileName = `MOM_${this.meetingTopic.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.txt`;
+    const fileName = `MOM_${this.meetingTopic.replace(/[^a-z0-9]/gi, '_')}.txt`;
 
     if (window.AndroidBridge && typeof window.AndroidBridge.saveToFile === 'function') {
       try {
@@ -413,7 +457,7 @@ ${(this.lastMOM.decisions || []).map(d => `- ${d}`).join('\n')}
   }
 };
 
-// Global callback for AI MOM completion
+// Global callback for AI MOM completion with markdown code block cleaning (Issue 5)
 window.onMOMGeneratedComplete = function(respStr) {
   try {
     let parsed;

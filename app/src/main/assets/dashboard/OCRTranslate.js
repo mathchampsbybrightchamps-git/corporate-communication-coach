@@ -1,206 +1,130 @@
-// CCOS Camera OCR Scanning & Live Translate Module - 100% Real-Time & Native CORS-Free Engine
+// CCOS Multimodal Scan & Translate Engine with Sub-Second Performance & Low-Light Detection
 CommCoach.OCRTranslate = {
-  stream: null,
   mode: 'live',
   interval: null,
-  lastTranslatedText: "",
-  canvas: null,
+  stream: null,
   capturedImageData: null,
-
-  languages: [
-    { code: 'en', name: 'English', locale: 'en-US' },
-    { code: 'hi', name: 'Hindi', locale: 'hi-IN' },
-    { code: 'zh', name: 'Mandarin (Chinese)', locale: 'zh-CN' },
-    { code: 'es', name: 'Spanish', locale: 'es-ES' },
-    { code: 'fr', name: 'French', locale: 'fr-FR' },
-    { code: 'ar', name: 'Arabic', locale: 'ar-SA' },
-    { code: 'bn', name: 'Bengali', locale: 'bn-IN' },
-    { code: 'pt', name: 'Portuguese', locale: 'pt-BR' },
-    { code: 'ru', name: 'Russian', locale: 'ru-RU' },
-    { code: 'ur', name: 'Urdu', locale: 'ur-PK' },
-    { code: 'id', name: 'Indonesian', locale: 'id-ID' },
-    { code: 'de', name: 'German', locale: 'de-DE' },
-    { code: 'ja', name: 'Japanese', locale: 'ja-JP' },
-    { code: 'sw', name: 'Swahili', locale: 'sw-KE' },
-    { code: 'mr', name: 'Marathi', locale: 'mr-IN' },
-    { code: 'te', name: 'Telugu', locale: 'te-IN' },
-    { code: 'tr', name: 'Turkish', locale: 'tr-TR' },
-    { code: 'ta', name: 'Tamil', locale: 'ta-IN' },
-    { code: 'pa', name: 'Punjabi', locale: 'pa-IN' },
-    { code: 'fa', name: 'Persian', locale: 'fa-IR' },
-    { code: 'vi', name: 'Vietnamese', locale: 'vi-VN' },
-    { code: 'it', name: 'Italian', locale: 'it-IT' },
-    { code: 'ha', name: 'Hausa', locale: 'ha-NG' },
-    { code: 'th', name: 'Thai', locale: 'th-TH' },
-    { code: 'gu', name: 'Gujarati', locale: 'gu-IN' },
-    { code: 'pl', name: 'Polish', locale: 'pl-PL' },
-    { code: 'uk', name: 'Ukrainian', locale: 'uk-UA' },
-    { code: 'kn', name: 'Kannada', locale: 'kn-IN' },
-    { code: 'ml', name: 'Malayalam', locale: 'ml-IN' }
-  ],
+  targetLanguage: 'hi',
 
   init() {
-    const backBtn = document.getElementById('btn-ocr-back');
-    const modeLive = document.getElementById('btn-ocr-mode-live');
-    const modeCapture = document.getElementById('btn-ocr-mode-capture');
-    const modeGallery = document.getElementById('btn-ocr-mode-gallery');
-    const fileInput = document.getElementById('ocr-file-input');
-    const shutterBtn = document.getElementById('btn-ocr-shutter');
-    const pronounceBtn = document.getElementById('btn-ocr-pronounce');
+    const tabLive = document.getElementById('tab-ocr-live');
+    const tabGallery = document.getElementById('tab-ocr-gallery');
+    const btnCapture = document.getElementById('btn-ocr-capture');
+    const btnBack = document.getElementById('btn-ocr-back');
+    const btnPronounce = document.getElementById('btn-ocr-pronounce');
+    const galleryInput = document.getElementById('input-ocr-gallery');
     const targetSelect = document.getElementById('ocr-target-lang');
+    const cardAction = document.getElementById('action-scan-translate');
 
-    // Populate target language select with all 29 supported languages
-    if (targetSelect) {
-      targetSelect.innerHTML = '';
-      this.languages.forEach(lang => {
-        const opt = document.createElement('option');
-        opt.value = lang.code;
-        opt.innerText = lang.name;
-        if (lang.code === 'hi') opt.selected = true;
-        targetSelect.appendChild(opt);
+    if (cardAction) {
+      cardAction.addEventListener('click', () => {
+        CommCoach.Navigation.navigate('screen-scan-translate');
       });
     }
 
-    if (pronounceBtn) {
-      pronounceBtn.disabled = false;
-      pronounceBtn.addEventListener('click', () => {
-        this.speakPronunciation();
-      });
-    }
-
-    if (backBtn) {
-      backBtn.addEventListener('click', () => {
+    if (btnBack) {
+      btnBack.addEventListener('click', () => {
         this.stopCamera();
         CommCoach.Navigation.goBack();
       });
     }
 
-    if (modeLive) {
-      modeLive.addEventListener('click', () => {
+    if (tabLive) {
+      tabLive.addEventListener('click', () => {
         this.mode = 'live';
-        this.setActiveModeChip(modeLive);
-        if (shutterBtn) shutterBtn.style.display = 'none';
-        this.showVideoPreview();
+        tabLive.classList.add('active');
+        if (tabGallery) tabGallery.classList.remove('active');
+        document.getElementById('container-ocr-live').style.display = 'block';
+        document.getElementById('container-ocr-gallery').style.display = 'none';
         this.startCamera();
       });
     }
 
-    if (modeCapture) {
-      modeCapture.addEventListener('click', () => {
-        this.mode = 'capture';
-        this.setActiveModeChip(modeCapture);
-        if (shutterBtn) shutterBtn.style.display = 'block';
-        this.showVideoPreview();
-        this.startCamera();
-        clearInterval(this.interval);
-      });
-    }
-
-    if (modeGallery) {
-      modeGallery.addEventListener('click', () => {
+    if (tabGallery) {
+      tabGallery.addEventListener('click', () => {
         this.mode = 'gallery';
-        this.setActiveModeChip(modeGallery);
-        if (shutterBtn) shutterBtn.style.display = 'none';
-        clearInterval(this.interval);
-        if (fileInput) fileInput.click();
+        tabGallery.classList.add('active');
+        if (tabLive) tabLive.classList.remove('active');
+        document.getElementById('container-ocr-live').style.display = 'none';
+        document.getElementById('container-ocr-gallery').style.display = 'block';
+        this.stopCamera();
       });
     }
 
-    if (fileInput) {
-      fileInput.addEventListener('change', (e) => {
+    if (btnCapture) {
+      btnCapture.addEventListener('click', () => {
+        this.captureAndProcessFrame();
+      });
+    }
+
+    if (btnPronounce) {
+      btnPronounce.addEventListener('click', () => {
+        this.speakPronunciation();
+      });
+    }
+
+    if (galleryInput) {
+      galleryInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
           reader.onload = (event) => {
-            const imgPreview = document.getElementById('ocr-image-preview');
-            const videoPreview = document.getElementById('ocr-camera-preview');
-            if (imgPreview) {
-              imgPreview.src = event.target.result;
-              imgPreview.style.display = 'block';
+            const preview = document.getElementById('ocr-gallery-preview');
+            if (preview) {
+              preview.src = event.target.result;
+              preview.style.display = 'block';
             }
-            if (videoPreview) videoPreview.style.display = 'none';
             this.capturedImageData = event.target.result;
-            this.processImageData(this.capturedImageData);
+            this.processImageData(event.target.result);
           };
           reader.readAsDataURL(file);
         }
       });
     }
 
-    if (shutterBtn) {
-      shutterBtn.addEventListener('click', () => {
-        this.captureAndProcessFrame();
-      });
-    }
-
     if (targetSelect) {
-      targetSelect.addEventListener('change', () => {
+      targetSelect.addEventListener('change', (e) => {
+        this.targetLanguage = e.target.value;
         if (this.capturedImageData) {
           this.processImageData(this.capturedImageData);
-        } else {
-          this.captureAndProcessFrame();
         }
       });
     }
 
-    this.canvas = document.createElement('canvas');
-  },
-
-  setActiveModeChip(activeChip) {
-    const modeLive = document.getElementById('btn-ocr-mode-live');
-    const modeCapture = document.getElementById('btn-ocr-mode-capture');
-    const modeGallery = document.getElementById('btn-ocr-mode-gallery');
-
-    [modeLive, modeCapture, modeGallery].forEach(chip => {
-      if (chip) chip.classList.remove('active');
-    });
-    if (activeChip) activeChip.classList.add('active');
-  },
-
-  showVideoPreview() {
-    const imgPreview = document.getElementById('ocr-image-preview');
-    const videoPreview = document.getElementById('ocr-camera-preview');
-    if (imgPreview) imgPreview.style.display = 'none';
-    if (videoPreview) videoPreview.style.display = 'block';
+    // Auto-start camera if booted directly into scan screen
+    const screen = document.getElementById('screen-scan-translate');
+    if (screen && screen.classList.contains('active')) {
+      this.startCamera();
+    }
   },
 
   async startCamera() {
     const video = document.getElementById('ocr-camera-preview');
     if (!video) return;
 
-    this.stopCamera();
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        this.stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            aspectRatio: 1.33
+          }
+        });
+        video.srcObject = this.stream;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.play().catch(e => console.warn("Video play exception", e));
 
-    const constraintList = [
-      { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-      { video: { facingMode: { ideal: 'user' } }, audio: false },
-      { video: true, audio: false }
-    ];
-
-    let streamObtained = null;
-    for (const constraints of constraintList) {
-      try {
-        streamObtained = await navigator.mediaDevices.getUserMedia(constraints);
-        if (streamObtained) break;
-      } catch (err) {
-        console.warn("Camera constraint attempt failed", err);
+        if (this.mode === 'live') {
+          this.startLiveLoop();
+        }
       }
-    }
-
-    if (streamObtained) {
-      this.stream = streamObtained;
-      video.srcObject = this.stream;
-      video.muted = true;
-      video.playsInline = true;
-
-      try {
-        await video.play();
-      } catch (playErr) {
-        console.warn("Video play promise error", playErr);
-      }
-
-      if (this.mode === 'live') {
-        this.startLiveLoop();
-      }
+    } catch (e) {
+      console.warn("Camera access fallback", e);
+      const originalEl = document.getElementById('ocr-text-original');
+      if (originalEl) originalEl.innerText = "Camera access unavailable. Select photo from gallery.";
     }
   },
 
@@ -220,8 +144,54 @@ CommCoach.OCRTranslate = {
     this.interval = setInterval(() => {
       if (this.mode === 'live') {
         this.captureAndProcessFrame();
+        this.checkLowLightCondition();
       }
     }, 800);
+  },
+
+  /**
+   * Issue 9: Detect low-light conditions and notify user
+   */
+  checkLowLightCondition() {
+    const video = document.getElementById('ocr-camera-preview');
+    if (!video || video.videoWidth === 0) return;
+
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 100;
+      canvas.height = 100;
+      ctx.drawImage(video, 0, 0, 100, 100);
+      const imgData = ctx.getImageData(0, 0, 100, 100);
+      const data = imgData.data;
+
+      let totalBrightness = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        totalBrightness += brightness;
+      }
+      const avgBrightness = totalBrightness / (data.length / 4);
+      const lowLightBanner = document.getElementById('ocr-lowlight-warning');
+
+      if (avgBrightness < 45) {
+        if (!lowLightBanner) {
+          const banner = document.createElement('div');
+          banner.id = 'ocr-lowlight-warning';
+          banner.className = 'font-11 text-center pad-4';
+          banner.style.background = 'rgba(239, 68, 68, 0.2)';
+          banner.style.color = '#ef4444';
+          banner.style.borderRadius = 'var(--radius-sm)';
+          banner.style.marginTop = '8px';
+          banner.innerText = 'Low light detected. Move to brighter area for optimal OCR accuracy.';
+          const parent = document.getElementById('container-ocr-live');
+          if (parent) parent.appendChild(banner);
+        }
+      } else if (lowLightBanner) {
+        lowLightBanner.remove();
+      }
+    } catch (e) {
+      // Ignored for surface draw
+    }
   },
 
   captureAndProcessFrame() {
@@ -261,39 +231,41 @@ CommCoach.OCRTranslate = {
   },
 
   speakPronunciation() {
-    const textToSpeak = this.lastTranslatedText || document.getElementById('ocr-text-translated')?.innerText || "Sanrakshit pathya";
-    if (!textToSpeak) return;
-
+    const translatedEl = document.getElementById('ocr-text-translated');
     const targetSelect = document.getElementById('ocr-target-lang');
-    const targetCode = targetSelect ? targetSelect.value : 'hi';
+    const textToSpeak = translatedEl ? translatedEl.innerText : '';
+    const langCode = targetSelect ? targetSelect.value : 'hi';
 
+    if (!textToSpeak || textToSpeak === 'Waiting for input...' || textToSpeak === 'Translating...') {
+      return;
+    }
+
+    // 1. Call Native Android TextToSpeech engine via Bridge if available
     if (window.AndroidBridge && typeof window.AndroidBridge.speakText === 'function') {
       try {
-        window.AndroidBridge.speakText(textToSpeak, targetCode);
+        window.AndroidBridge.speakText(textToSpeak, langCode);
         return;
       } catch (e) {
-        console.warn("Native speakText call failed, falling back to Web Speech API", e);
+        console.warn("Native speakText bridge call failed, falling back to Web Speech", e);
       }
     }
 
-    const langObj = this.languages.find(l => l.code === targetCode) || { locale: 'en-US' };
-
+    // 2. Fallback to Web Speech API window.speechSynthesis
     if ('speechSynthesis' in window) {
-      try {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.lang = langObj.locale || 'en-US';
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
-      } catch (e) {
-        console.warn("Speech synthesis error", e);
-      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = langCode;
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
     }
   }
 };
 
-// Global OCR AI callback handler
+// Global callback for Native Android Bridge Vision OCR completion with Issue 5 JSON code block cleaning
 window.onOCRResultComplete = function(respStr) {
+  const originalEl = document.getElementById('ocr-text-original');
+  const translatedEl = document.getElementById('ocr-text-translated');
+
   try {
     let parsed;
     try {
@@ -310,17 +282,20 @@ window.onOCRResultComplete = function(respStr) {
       parsed = JSON.parse(cleanJson);
     }
 
-    const originalEl = document.getElementById('ocr-text-original');
-    const translatedEl = document.getElementById('ocr-text-translated');
-
-    if (parsed.detected && originalEl) {
+    if (originalEl && parsed.detected) {
       originalEl.innerText = parsed.detected;
     }
-    if (parsed.translated && translatedEl) {
+
+    if (translatedEl && parsed.translated) {
       translatedEl.innerText = parsed.translated;
-      CommCoach.OCRTranslate.lastTranslatedText = parsed.translated;
     }
   } catch (e) {
-    console.error("OCR result parse failed", e);
+    console.error("OCR response parse error", e);
+    if (originalEl && originalEl.innerText === "Analyzing image & extracting text...") {
+      originalEl.innerText = "Align text inside frame or select a photo from gallery...";
+    }
+    if (translatedEl && translatedEl.innerText === "Translating...") {
+      translatedEl.innerText = "Waiting for input...";
+    }
   }
 };
