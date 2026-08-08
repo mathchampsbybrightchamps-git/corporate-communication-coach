@@ -29,9 +29,14 @@
 
     <!-- In-App Nudge Toast Banner -->
     <div id="in-app-nudge-toast" class="nudge-toast" style="display: none;">
-      <div class="nudge-toast-content">
-        <span class="nudge-toast-title" id="nudge-toast-title">Streak Warning</span>
-        <p class="nudge-toast-message" id="nudge-toast-msg">Practice now to maintain your streak.</p>
+      <div class="flex-row justify-between items-center">
+        <div class="nudge-toast-content">
+          <span class="nudge-toast-title" id="nudge-toast-title">Streak Warning</span>
+          <p class="nudge-toast-message" id="nudge-toast-msg">Practice now to maintain your streak.</p>
+        </div>
+        <button id="btn-nudge-close" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
     </div>
 
@@ -793,27 +798,26 @@
             <div style="width: 40px;"></div>
           </div>
 
-          <!-- Live Camera Preview Frame -->
-          <div class="camera-frame-wrapper pad-top-24" style="position: relative;">
-            <video id="ocr-camera-preview" autoplay playsinline style="width: 100%; height: 280px; object-fit: cover; border-radius: var(--radius-md); background: #000;"></video>
-            <!-- Overlay scanning rectangle -->
-            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 50%; border: 2px dashed var(--primary); border-radius: 8px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.4); z-index: 2;"></div>
+          <!-- Live Camera / Image Frame -->
+          <div class="camera-frame-wrapper pad-top-16" style="position: relative;">
+            <video id="ocr-camera-preview" autoplay playsinline muted style="width: 100%; height: 260px; object-fit: cover; border-radius: var(--radius-md); background: #111; display: block;"></video>
+            <img id="ocr-image-preview" style="width: 100%; height: 260px; object-fit: contain; border-radius: var(--radius-md); background: #111; display: none;" alt="Selected Photo">
+            <!-- Hidden File Input for Gallery Selection -->
+            <input type="file" id="ocr-file-input" accept="image/*" style="display: none;">
+            <!-- Overlay scanning reticle -->
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 55%; border: 2px dashed var(--primary); border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); z-index: 2;"></div>
           </div>
 
           <!-- Controls Mode & Target Select -->
           <div class="flex-row justify-between items-center pad-top-16 gap-8">
             <div class="flex-row gap-8" id="ocr-mode-chips">
-              <button class="chip active" id="btn-ocr-mode-live" data-i18n="ocr_mode_live">Live Lens</button>
-              <button class="chip" id="btn-ocr-mode-capture" data-i18n="ocr_mode_capture">Capture Photo</button>
+              <button class="chip active" id="btn-ocr-mode-live">Live Lens</button>
+              <button class="chip" id="btn-ocr-mode-capture">Capture</button>
+              <button class="chip" id="btn-ocr-mode-gallery">Gallery</button>
             </div>
             
             <select id="ocr-target-lang" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-color); color: var(--text-main); font-size: 12px; padding: 6px 12px; border-radius: 6px; flex: 1;">
-              <option value="en">English</option>
-              <option value="zh">Mandarin</option>
-              <option value="hi">Hindi</option>
-              <option value="es">Spanish</option>
-              <option value="fr">French</option>
-              <option value="ar">Arabic</option>
+              <!-- Populated dynamically -->
             </select>
           </div>
 

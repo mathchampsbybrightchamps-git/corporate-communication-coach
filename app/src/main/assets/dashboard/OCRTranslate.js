@@ -51,6 +51,8 @@ CommCoach.OCRTranslate = {
     const backBtn = document.getElementById('btn-ocr-back');
     const modeLive = document.getElementById('btn-ocr-mode-live');
     const modeCapture = document.getElementById('btn-ocr-mode-capture');
+    const modeGallery = document.getElementById('btn-ocr-mode-gallery');
+    const fileInput = document.getElementById('ocr-file-input');
     const shutterBtn = document.getElementById('btn-ocr-shutter');
     const pronounceBtn = document.getElementById('btn-ocr-pronounce');
     const targetSelect = document.getElementById('ocr-target-lang');
@@ -77,9 +79,9 @@ CommCoach.OCRTranslate = {
     if (modeLive) {
       modeLive.addEventListener('click', () => {
         this.mode = 'live';
-        modeLive.classList.add('active');
-        if (modeCapture) modeCapture.classList.remove('active');
+        this.setActiveModeChip(modeLive);
         if (shutterBtn) shutterBtn.style.display = 'none';
+        this.showVideoPreview();
         this.startLiveLoop();
       });
     }
@@ -87,10 +89,40 @@ CommCoach.OCRTranslate = {
     if (modeCapture) {
       modeCapture.addEventListener('click', () => {
         this.mode = 'capture';
-        modeCapture.classList.add('active');
-        if (modeLive) modeLive.classList.remove('active');
+        this.setActiveModeChip(modeCapture);
         if (shutterBtn) shutterBtn.style.display = 'block';
+        this.showVideoPreview();
         clearInterval(this.interval);
+      });
+    }
+
+    if (modeGallery) {
+      modeGallery.addEventListener('click', () => {
+        this.mode = 'gallery';
+        this.setActiveModeChip(modeGallery);
+        if (shutterBtn) shutterBtn.style.display = 'none';
+        clearInterval(this.interval);
+        if (fileInput) fileInput.click();
+      });
+    }
+
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const imgPreview = document.getElementById('ocr-image-preview');
+            const videoPreview = document.getElementById('ocr-camera-preview');
+            if (imgPreview) {
+              imgPreview.src = event.target.result;
+              imgPreview.style.display = 'block';
+            }
+            if (videoPreview) videoPreview.style.display = 'none';
+            this.performTranslation();
+          };
+          reader.readAsDataURL(file);
+        }
       });
     }
 
@@ -112,8 +144,25 @@ CommCoach.OCRTranslate = {
       });
     }
 
-    // Create offscreen canvas for frame capture
     this.canvas = document.createElement('canvas');
+  },
+
+  setActiveModeChip(activeChip) {
+    const modeLive = document.getElementById('btn-ocr-mode-live');
+    const modeCapture = document.getElementById('btn-ocr-mode-capture');
+    const modeGallery = document.getElementById('btn-ocr-mode-gallery');
+
+    [modeLive, modeCapture, modeGallery].forEach(chip => {
+      if (chip) chip.classList.remove('active');
+    });
+    if (activeChip) activeChip.classList.add('active');
+  },
+
+  showVideoPreview() {
+    const imgPreview = document.getElementById('ocr-image-preview');
+    const videoPreview = document.getElementById('ocr-camera-preview');
+    if (imgPreview) imgPreview.style.display = 'none';
+    if (videoPreview) videoPreview.style.display = 'block';
   },
 
   async startCamera() {
@@ -126,14 +175,21 @@ CommCoach.OCRTranslate = {
         audio: false
       });
       video.srcObject = this.stream;
-      await video.play();
+      video.muted = true;
+      video.playsInline = true;
+      
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.warn("Autoplay error override", error);
+        });
+      }
 
       if (this.mode === 'live') {
         this.startLiveLoop();
       }
     } catch (err) {
       console.warn("Camera access fallback mode active", err);
-      // Even if camera preview is blocked in emulator, OCR engine operates fully
       this.performTranslation();
     }
   },
@@ -188,13 +244,10 @@ CommCoach.OCRTranslate = {
     originalEl.innerText = detectedText;
 
     // Translation Lookup Engine
-    const targetDict = translations[targetCode] || translations['en'];
     let translatedText = "";
-
     if (targetCode === 'en') {
       translatedText = detectedText;
     } else {
-      // Use i18n translation map or dynamic fallback tag
       const langObj = this.languages.find(l => l.code === targetCode) || { name: targetCode.toUpperCase() };
       const sampleMap = {
         hi: "हमें विभाग के मील के पत्थर संरेखित करने होंगे।",

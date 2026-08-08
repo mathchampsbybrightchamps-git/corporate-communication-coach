@@ -10,16 +10,19 @@ CommCoach.Nudges = {
   ],
 
   init() {
-    // Schedule a recurring check every 45 seconds to trigger random nudges
+    const closeBtn = document.getElementById('btn-nudge-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        const toast = document.getElementById('in-app-nudge-toast');
+        if (toast) toast.style.display = 'none';
+      });
+    }
+
+    // Schedule a recurring check every 90 seconds to trigger subtle nudges
     clearInterval(this.nudgeInterval);
     this.nudgeInterval = setInterval(() => {
       this.triggerRandomNudge();
-    }, 45000);
-
-    // Trigger an initial nudge shortly after boot
-    setTimeout(() => {
-      this.triggerRandomNudge();
-    }, 6000);
+    }, 90000);
   },
 
   triggerRandomNudge() {
