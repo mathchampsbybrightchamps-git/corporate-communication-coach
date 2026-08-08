@@ -285,6 +285,16 @@ Original transcript: "${transcript}"`;
         this.lastScenarioTag
       );
     }
+
+    // Sync drill log to Supabase PostgreSQL database
+    if (CommCoach.Supabase) {
+      CommCoach.Supabase.saveDrillLog({
+        scenarioTag: this.lastScenarioTag,
+        transcript: this.lastTranscript,
+        reframedText: cleaned,
+        metrics: this.lastMetrics
+      });
+    }
   }
 };
 
@@ -329,6 +339,16 @@ window.onDeepAnalysisComplete = function(respStr) {
         CommCoach.FeedbackSummary.lastMetrics,
         CommCoach.FeedbackSummary.lastScenarioTag
       );
+    }
+
+    // Sync drill log to Supabase PostgreSQL database
+    if (CommCoach.Supabase) {
+      CommCoach.Supabase.saveDrillLog({
+        scenarioTag: CommCoach.FeedbackSummary.lastScenarioTag,
+        transcript: CommCoach.FeedbackSummary.lastTranscript,
+        reframedText: parsed.reframed || CommCoach.FeedbackSummary.lastReframed,
+        metrics: CommCoach.FeedbackSummary.lastMetrics
+      });
     }
   } catch (e) {
     console.error("Deep analysis parse failed, running local fallback", e);

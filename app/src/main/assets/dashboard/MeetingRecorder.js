@@ -335,6 +335,18 @@ ${diarizedText}`;
     if (CommCoach.RecordingStorage) {
       CommCoach.RecordingStorage.writeFile(fileName, content);
     }
+
+    // Sync MOM record to Supabase PostgreSQL database
+    if (CommCoach.Supabase) {
+      CommCoach.Supabase.saveMOMRecord({
+        topic: this.meetingTopic,
+        speakersCount: this.speakers.length,
+        summary: this.lastMOM.summary,
+        keyPoints: this.lastMOM.keyPoints,
+        actionItems: this.lastMOM.actionItems,
+        decisions: this.lastMOM.decisions
+      });
+    }
   },
 
   exportMOMFile() {

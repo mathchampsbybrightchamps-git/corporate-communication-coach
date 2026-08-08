@@ -28,6 +28,7 @@ window.addEventListener('DOMContentLoaded', () => {
   feather.replace();
   
   // Initialization sequences in modular order
+  if (CommCoach.Supabase) CommCoach.Supabase.init();
   if (CommCoach.State) CommCoach.State.load();
   if (CommCoach.Navigation) CommCoach.Navigation.init();
   if (CommCoach.i18n) CommCoach.i18n.init();

@@ -10,6 +10,11 @@ CommCoach.State = {
   save() {
     localStorage.setItem('ccos_state', JSON.stringify(CommCoach.state));
     
+    // Sync profile state to Supabase PostgreSQL Database
+    if (CommCoach.Supabase) {
+      CommCoach.Supabase.syncProfile(CommCoach.state);
+    }
+    
     // Forward document data to native Firestore sync
     if (window.AndroidBridge && typeof window.AndroidBridge.saveStats === 'function') {
       try {
