@@ -1,4 +1,4 @@
-// CCOS Multimodal Scan & Translate Engine with Sub-Second Performance & Low-Light Detection
+// CCOS Multimodal Scan & Translate Engine with Direct Video Canvas Frame Extraction
 CommCoach.OCRTranslate = {
   mode: 'live',
   interval: null,
@@ -146,11 +146,44 @@ CommCoach.OCRTranslate = {
         this.captureAndProcessFrame();
         this.checkLowLightCondition();
       }
-    }, 800);
+    }, 1200);
   },
 
   /**
-   * Issue 9: Detect low-light conditions and notify user
+   * Extract video frame pixels directly from video element and crop reticle area
+   */
+  captureVideoFrameBase64() {
+    const video = document.getElementById('ocr-camera-preview');
+    if (!video || video.readyState < 2 || video.videoWidth === 0) return null;
+
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Crop reticle box area (top 10% to 55%, left 5% to 95%)
+      const startX = Math.floor(canvas.width * 0.05);
+      const startY = Math.floor(canvas.height * 0.10);
+      const cropW = Math.floor(canvas.width * 0.90);
+      const cropH = Math.floor(canvas.height * 0.45);
+
+      const cropCanvas = document.createElement('canvas');
+      cropCanvas.width = Math.min(cropW, 480);
+      cropCanvas.height = Math.floor(cropH * (cropCanvas.width / cropW));
+      const cropCtx = cropCanvas.getContext('2d');
+      cropCtx.drawImage(canvas, startX, startY, cropW, cropH, 0, 0, cropCanvas.width, cropCanvas.height);
+
+      return cropCanvas.toDataURL('image/jpeg', 0.7);
+    } catch (e) {
+      console.warn("Canvas capture exception", e);
+      return null;
+    }
+  },
+
+  /**
+   * Detect low-light conditions and notify user
    */
   checkLowLightCondition() {
     const video = document.getElementById('ocr-camera-preview');
@@ -195,6 +228,12 @@ CommCoach.OCRTranslate = {
   },
 
   captureAndProcessFrame() {
+    if (this.mode === 'live') {
+      const frameBase64 = this.captureVideoFrameBase64();
+      if (frameBase64) {
+        this.capturedImageData = frameBase64;
+      }
+    }
     this.processImageData(this.capturedImageData);
   },
 
@@ -209,23 +248,23 @@ CommCoach.OCRTranslate = {
       if (translatedEl) translatedEl.innerText = "Translating...";
     }
 
-    // 1. Try Native CORS-Free Frame Capture & Vision OCR via Kotlin Bridge first
-    if (window.AndroidBridge && typeof window.AndroidBridge.captureFrameAndProcess === 'function' && this.mode !== 'gallery') {
-      try {
-        window.AndroidBridge.captureFrameAndProcess(targetCode, 'onOCRResultComplete');
-        return;
-      } catch (e) {
-        console.warn("Native captureFrameAndProcess bridge call failed", e);
-      }
-    }
-
-    // 2. Try Base64 Image Processing for Gallery upload
+    // 1. Try sending direct Base64 Video Frame to Native Kotlin Bridge processOCRImage first
     if (base64Image && window.AndroidBridge && typeof window.AndroidBridge.processOCRImage === 'function') {
       try {
         window.AndroidBridge.processOCRImage(base64Image, targetCode, 'onOCRResultComplete');
         return;
       } catch (e) {
         console.warn("Native processOCRImage bridge call failed", e);
+      }
+    }
+
+    // 2. Fallback to Native Surface Frame Capture
+    if (window.AndroidBridge && typeof window.AndroidBridge.captureFrameAndProcess === 'function' && this.mode !== 'gallery') {
+      try {
+        window.AndroidBridge.captureFrameAndProcess(targetCode, 'onOCRResultComplete');
+        return;
+      } catch (e) {
+        console.warn("Native captureFrameAndProcess bridge call failed", e);
       }
     }
   },
@@ -261,7 +300,7 @@ CommCoach.OCRTranslate = {
   }
 };
 
-// Global callback for Native Android Bridge Vision OCR completion with Issue 5 JSON code block cleaning
+// Global callback for Native Android Bridge Vision OCR completion with JSON code block cleaning
 window.onOCRResultComplete = function(respStr) {
   const originalEl = document.getElementById('ocr-text-original');
   const translatedEl = document.getElementById('ocr-text-translated');
