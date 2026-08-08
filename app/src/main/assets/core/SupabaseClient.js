@@ -4,9 +4,9 @@ CommCoach.Supabase = {
   isInitialized: false,
 
   init() {
-    // Configurable Supabase parameters (overridable via window.SUPABASE_URL and window.SUPABASE_ANON_KEY)
-    const url = window.SUPABASE_URL || 'https://corporate-comm-coach.supabase.co';
-    const anonKey = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBvcmF0ZS1jb21tLWNvYWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MjAxNTAwMDAwMH0.placeholder';
+    // Live Supabase parameters
+    const url = window.SUPABASE_URL || 'https://adpmukrybifwwyyiuxqe.supabase.co';
+    const anonKey = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkcG11a3J5Ymlmd3d5eWl1eHFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNzM5NTEsImV4cCI6MjEwMTc0OTk1MX0.j9B4dylsWA6klfiUrfuoOXuRol-nRi4hn3RbFWUbN14';
 
     if (window.supabase && typeof window.supabase.createClient === 'function') {
       try {
