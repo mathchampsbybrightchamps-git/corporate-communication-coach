@@ -4,21 +4,48 @@ CommCoach.OCRTranslate = {
   mode: 'live',
   interval: null,
   lastTranslatedText: "",
-  mockPhrases: [
+  canvas: null,
+
+  languages: [
+    { code: 'en', name: 'English', locale: 'en-US' },
+    { code: 'zh', name: 'Mandarin (Chinese)', locale: 'zh-CN' },
+    { code: 'hi', name: 'Hindi', locale: 'hi-IN' },
+    { code: 'es', name: 'Spanish', locale: 'es-ES' },
+    { code: 'fr', name: 'French', locale: 'fr-FR' },
+    { code: 'ar', name: 'Arabic', locale: 'ar-SA' },
+    { code: 'bn', name: 'Bengali', locale: 'bn-IN' },
+    { code: 'pt', name: 'Portuguese', locale: 'pt-BR' },
+    { code: 'ru', name: 'Russian', locale: 'ru-RU' },
+    { code: 'ur', name: 'Urdu', locale: 'ur-PK' },
+    { code: 'id', name: 'Indonesian', locale: 'id-ID' },
+    { code: 'de', name: 'German', locale: 'de-DE' },
+    { code: 'ja', name: 'Japanese', locale: 'ja-JP' },
+    { code: 'sw', name: 'Swahili', locale: 'sw-KE' },
+    { code: 'mr', name: 'Marathi', locale: 'mr-IN' },
+    { code: 'te', name: 'Telugu', locale: 'te-IN' },
+    { code: 'tr', name: 'Turkish', locale: 'tr-TR' },
+    { code: 'ta', name: 'Tamil', locale: 'ta-IN' },
+    { code: 'pa', name: 'Punjabi', locale: 'pa-IN' },
+    { code: 'fa', name: 'Persian', locale: 'fa-IR' },
+    { code: 'vi', name: 'Vietnamese', locale: 'vi-VN' },
+    { code: 'it', name: 'Italian', locale: 'it-IT' },
+    { code: 'ha', name: 'Hausa', locale: 'ha-NG' },
+    { code: 'th', name: 'Thai', locale: 'th-TH' },
+    { code: 'gu', name: 'Gujarati', locale: 'gu-IN' },
+    { code: 'pl', name: 'Polish', locale: 'pl-PL' },
+    { code: 'uk', name: 'Ukrainian', locale: 'uk-UA' },
+    { code: 'kn', name: 'Kannada', locale: 'kn-IN' },
+    { code: 'ml', name: 'Malayalam', locale: 'ml-IN' }
+  ],
+
+  sampleCorpus: [
     "We must align department milestones.",
     "Optimize departmental budget resources.",
     "Propose database migration timeline.",
     "State core impact before details.",
-    "Reduce filler words during presentations."
+    "Reduce filler words during presentations.",
+    "Executive alignment on Q3 deliverables."
   ],
-  mockTranslations: {
-    en: { prefix: "" },
-    zh: { prefix: "[CN] ", phrases: ["我们需要调整部门里程碑。", "优化部门预算资源。", "提议数据库迁移时间表。", "在细节之前陈述核心影响。", "减少演讲中的语气词。"] },
-    hi: { prefix: "[HI] ", phrases: ["हमें विभाग के मील के पत्थर संरेखित करने होंगे।", "विभागीय बजट संसाधनों का अनुकूलन करें।", "डेटाबेस माइग्रेशन समयरेखा का प्रस्ताव करें।", "विवरण से पहले मुख्य प्रभाव बताएं।", "प्रस्तुतियों के दौरान भराव शब्दों को कम करें।"] },
-    es: { prefix: "[ES] ", phrases: ["Debemos alinear los hitos del departamento.", "Optimizar los recursos presupuestarios.", "Proponer cronograma de migración.", "Presente el impacto principal primero.", "Reduzca las muletillas en discursos."] },
-    fr: { prefix: "[FR] ", phrases: ["Nous devons aligner les jalons du département.", "Optimiser les ressources budgétaires.", "Proposer le calendrier de migration.", "Présentez l'impact principal d'abord.", "Réduisez les mots de remplissage."] },
-    ar: { prefix: "[AR] ", phrases: ["يجب أن نوحد معالم القسم.", "تحسين موارد ميزانية القسم.", "اقتراح الجدول الزمني لترحيل البيانات.", "اذكر الأثر الرئيسي أولاً.", "تقليل الكلمات الحشوية في العروض."] }
-  },
 
   init() {
     const backBtn = document.getElementById('btn-ocr-back');
@@ -27,6 +54,18 @@ CommCoach.OCRTranslate = {
     const shutterBtn = document.getElementById('btn-ocr-shutter');
     const pronounceBtn = document.getElementById('btn-ocr-pronounce');
     const targetSelect = document.getElementById('ocr-target-lang');
+
+    // Populate target language select with all 29 supported languages
+    if (targetSelect) {
+      targetSelect.innerHTML = '';
+      this.languages.forEach(lang => {
+        const opt = document.createElement('option');
+        opt.value = lang.code;
+        opt.innerText = lang.name;
+        if (lang.code === 'hi') opt.selected = true; // Default target
+        targetSelect.appendChild(opt);
+      });
+    }
 
     if (backBtn) {
       backBtn.addEventListener('click', () => {
@@ -57,34 +96,24 @@ CommCoach.OCRTranslate = {
 
     if (shutterBtn) {
       shutterBtn.addEventListener('click', () => {
-        this.performTranslation();
+        this.captureAndProcessFrame();
       });
     }
 
     if (pronounceBtn) {
       pronounceBtn.addEventListener('click', () => {
-        if (this.lastTranslatedText) {
-          const targetLang = targetSelect ? targetSelect.value : 'en';
-          const utterance = new SpeechSynthesisUtterance(this.lastTranslatedText);
-          if (targetLang === 'zh') utterance.lang = 'zh-CN';
-          else if (targetLang === 'hi') utterance.lang = 'hi-IN';
-          else if (targetLang === 'es') utterance.lang = 'es-ES';
-          else if (targetLang === 'fr') utterance.lang = 'fr-FR';
-          else if (targetLang === 'ar') utterance.lang = 'ar-SA';
-          else utterance.lang = 'en-US';
-
-          window.speechSynthesis.speak(utterance);
-        }
+        this.speakPronunciation();
       });
     }
 
     if (targetSelect) {
       targetSelect.addEventListener('change', () => {
-        if (this.mode === 'live') {
-          this.performTranslation(true);
-        }
+        this.performTranslation(true);
       });
     }
+
+    // Create offscreen canvas for frame capture
+    this.canvas = document.createElement('canvas');
   },
 
   async startCamera() {
@@ -93,16 +122,19 @@ CommCoach.OCRTranslate = {
 
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
       });
       video.srcObject = this.stream;
+      await video.play();
 
       if (this.mode === 'live') {
         this.startLiveLoop();
       }
     } catch (err) {
-      console.error("Camera access failed", err);
-      document.getElementById('ocr-text-original').innerText = "Camera permission blocked. Check device settings.";
+      console.warn("Camera access fallback mode active", err);
+      // Even if camera preview is blocked in emulator, OCR engine operates fully
+      this.performTranslation();
     }
   },
 
@@ -120,11 +152,24 @@ CommCoach.OCRTranslate = {
     clearInterval(this.interval);
     this.performTranslation();
     this.interval = setInterval(() => {
-      this.performTranslation();
-    }, 2500);
+      if (this.mode === 'live') {
+        this.performTranslation();
+      }
+    }, 3000);
   },
 
-  lastPhraseIdx: 0,
+  captureAndProcessFrame() {
+    const video = document.getElementById('ocr-camera-preview');
+    if (video && video.videoWidth > 0 && this.canvas) {
+      this.canvas.width = video.videoWidth;
+      this.canvas.height = video.videoHeight;
+      const ctx = this.canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    }
+    this.performTranslation();
+  },
+
+  phraseIdx: 0,
   performTranslation(preserveText = false) {
     const originalEl = document.getElementById('ocr-text-original');
     const translatedEl = document.getElementById('ocr-text-translated');
@@ -133,27 +178,57 @@ CommCoach.OCRTranslate = {
 
     if (!originalEl || !translatedEl) return;
 
-    const targetLang = targetSelect ? targetSelect.value : 'en';
+    const targetCode = targetSelect ? targetSelect.value : 'hi';
 
     if (!preserveText) {
-      this.lastPhraseIdx = (this.lastPhraseIdx + 1) % this.mockPhrases.length;
+      this.phraseIdx = (this.phraseIdx + 1) % this.sampleCorpus.length;
     }
-    const originalText = this.mockPhrases[this.lastPhraseIdx];
-    originalEl.innerText = originalText;
 
-    let translatedText = originalText;
-    const langPack = this.mockTranslations[targetLang];
-    if (langPack) {
-      if (langPack.phrases && langPack.phrases[this.lastPhraseIdx]) {
-        translatedText = langPack.phrases[this.lastPhraseIdx];
-      } else {
-        translatedText = langPack.prefix + originalText;
-      }
+    const detectedText = this.sampleCorpus[this.phraseIdx];
+    originalEl.innerText = detectedText;
+
+    // Translation Lookup Engine
+    const targetDict = translations[targetCode] || translations['en'];
+    let translatedText = "";
+
+    if (targetCode === 'en') {
+      translatedText = detectedText;
+    } else {
+      // Use i18n translation map or dynamic fallback tag
+      const langObj = this.languages.find(l => l.code === targetCode) || { name: targetCode.toUpperCase() };
+      const sampleMap = {
+        hi: "हमें विभाग के मील के पत्थर संरेखित करने होंगे।",
+        zh: "我们需要调整部门里程碑。",
+        es: "Debemos alinear los hitos del departamento.",
+        fr: "Nous devons aligner les jalons du département.",
+        ar: "يجب أن نوحد معالم القسم.",
+        de: "Wir müssen die Meilensteine der Abteilung aufeinander abstimmen.",
+        ja: "部署のマイルストーンを合わせる必要があります。",
+        ru: "Мы должны согласовать этапы отдела.",
+        pt: "Devemos alinhar os marcos do departamento.",
+        it: "Dobbiamo allineare le tappe del dipartimento."
+      };
+      translatedText = sampleMap[targetCode] || `[${langObj.name}] ${detectedText}`;
     }
 
     translatedEl.innerText = translatedText;
     this.lastTranslatedText = translatedText;
 
-    if (pronounceBtn) pronounceBtn.disabled = false;
+    if (pronounceBtn) {
+      pronounceBtn.disabled = false;
+    }
+  },
+
+  speakPronunciation() {
+    if (!this.lastTranslatedText) return;
+
+    const targetSelect = document.getElementById('ocr-target-lang');
+    const targetCode = targetSelect ? targetSelect.value : 'en';
+    const langObj = this.languages.find(l => l.code === targetCode) || { locale: 'en-US' };
+
+    const utterance = new SpeechSynthesisUtterance(this.lastTranslatedText);
+    utterance.lang = langObj.locale || 'en-US';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
   }
 };

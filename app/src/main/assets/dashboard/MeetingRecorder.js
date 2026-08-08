@@ -64,23 +64,21 @@ CommCoach.MeetingRecorder = {
       this.recognition.lang = 'en-US';
 
       this.recognition.onresult = (event) => {
-        let finalChunk = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalChunk += event.results[i][0].transcript;
+          if (event.results[i].isFinal && !event.results[i]._processed) {
+            event.results[i]._processed = true;
+            const text = event.results[i][0].transcript.trim();
+            if (text) {
+              const activeSpk = this.speakers.find(s => s.id === this.activeSpeakerId) || { name: 'Speaker' };
+              this.transcriptLines.push({
+                speakerId: this.activeSpeakerId,
+                speakerName: activeSpk.name,
+                text: text,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+              });
+              this.renderLiveTranscript();
+            }
           }
-        }
-
-        if (finalChunk.trim()) {
-          const activeSpk = this.speakers.find(s => s.id === this.activeSpeakerId) || { name: 'Unknown' };
-          const lineObj = {
-            speakerId: this.activeSpeakerId,
-            speakerName: activeSpk.name,
-            text: finalChunk.trim(),
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-          };
-          this.transcriptLines.push(lineObj);
-          this.renderLiveTranscript();
         }
       };
 

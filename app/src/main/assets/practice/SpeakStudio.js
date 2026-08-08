@@ -25,17 +25,22 @@ CommCoach.SpeakStudio = {
       this.recognition.lang = 'en-IN'; 
 
       this.recognition.onresult = (event) => {
-        let interim = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = 0; i < event.results.length; ++i) {
+          const chunk = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            this.transcript += event.results[i][0].transcript + ' ';
+            finalTranscript += chunk.trim() + ' ';
           } else {
-            interim += event.results[i][0].transcript;
+            interimTranscript += chunk;
           }
         }
+
+        this.transcript = finalTranscript;
         const textLabel = document.getElementById('transcription-text');
         if (textLabel) {
-          textLabel.innerText = this.transcript + interim;
+          textLabel.innerText = (this.transcript + interimTranscript).trim() || "Listening...";
         }
       };
     }
