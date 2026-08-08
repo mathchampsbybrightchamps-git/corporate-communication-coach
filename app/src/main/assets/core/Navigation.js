@@ -58,7 +58,7 @@ CommCoach.Navigation = {
   goBack() {
     if (this.history.length > 0) {
       const previousScreen = this.history.pop();
-      // Navigate without pushing current screen back onto history
+      // Navigate to previous screen without re-pushing current screen
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const target = document.getElementById(previousScreen);
       if (target) {
@@ -81,10 +81,13 @@ CommCoach.Navigation = {
             item.classList.remove('active');
           }
         });
+        return true;
       }
-      return true; // Back was handled
     }
-    return false; // No history; let native handle (exit app)
+    
+    // Fallback: If history stack is empty, safely navigate back to main dashboard
+    this.navigate('screen-dashboard');
+    return true;
   },
 
   initRouter() {

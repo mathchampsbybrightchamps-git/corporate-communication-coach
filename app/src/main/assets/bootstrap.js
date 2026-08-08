@@ -56,7 +56,13 @@ window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     if (!window.location.hash) {
       const savedScreen = CommCoach.state.currentScreen;
-      const startScreen = (savedScreen && savedScreen !== 'screen-splash') ? savedScreen : (CommCoach.state.currentLevel ? 'screen-dashboard' : 'screen-welcome');
+      let startScreen = (savedScreen && savedScreen !== 'screen-splash') ? savedScreen : (CommCoach.state.currentLevel ? 'screen-dashboard' : 'screen-welcome');
+      
+      // If booting into a secondary screen, seed history with dashboard
+      if (startScreen !== 'screen-dashboard' && startScreen !== 'screen-welcome' && startScreen !== 'screen-auth') {
+        if (CommCoach.Navigation) CommCoach.Navigation.history.push('screen-dashboard');
+      }
+
       if (CommCoach.Navigation) CommCoach.Navigation.navigate(startScreen);
     }
   }, 1500);
