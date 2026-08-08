@@ -1,0 +1,40 @@
+/* animation system */
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.5; }
+  100% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes shimmer {
+  to { background-position: 200% center; }
+}
+
+@keyframes backgroundBreath {
+  0% { opacity: 0.9; }
+  100% { opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade {
+  animation: fadeIn 0.25s ease-in-out forwards;
+}
+
+.animate-orbit {
+  animation: orbit 1.5s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 4s infinite alternate ease-in-out;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s infinite linear;
+}

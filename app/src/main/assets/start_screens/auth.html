@@ -1,0 +1,77 @@
+<section id="screen-auth" class="screen">
+  <div class="flex-column full-height justify-between pad-24" style="overflow-y: auto;">
+    <div>
+      <div class="step-indicator" id="auth-flow-title" data-i18n="auth_title">Create Account</div>
+      <h2 class="section-title" id="auth-main-heading" data-i18n="auth_heading">Join Comm Coach</h2>
+      <p class="section-subtitle" id="auth-flow-subtitle" data-i18n="auth_subtitle">Start training your executive presence today.</p>
+
+      <div class="flex-column gap-16 pad-top-12">
+        <!-- Unified Input (Login Mode only) -->
+        <div class="input-group" id="group-login-unified" style="display: none;">
+          <label for="auth-login-id" class="input-label" data-i18n="auth_login_label">Username, Email, or Mobile Number</label>
+          <input type="text" id="auth-login-id" class="form-input" placeholder="Enter username, email, or phone">
+        </div>
+
+        <!-- Phone Input (Signup Mode only) -->
+        <div class="input-group" id="group-signup-phone">
+          <label for="auth-phone" class="input-label" data-i18n="auth_phone_label">Mobile Number</label>
+          <div class="phone-input-wrapper" style="display: flex; gap: 8px;">
+            <select id="auth-phone-prefix" class="form-input" style="width: 90px; padding: 12px 6px; text-align: center;">
+              <option value="+91">+91</option>
+              <option value="+1">+1</option>
+              <option value="+44">+44</option>
+              <option value="+971">+971</option>
+            </select>
+            <input type="tel" id="auth-phone" class="form-input" placeholder="98765 43210" style="flex: 1;">
+          </div>
+        </div>
+
+        <!-- Password Input -->
+        <div class="input-group">
+          <label for="auth-password" class="input-label" data-i18n="auth_password_label">Password</label>
+          <input type="password" id="auth-password" class="form-input" placeholder="••••••••">
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-cta-block" style="margin-top: 24px;">
+      <button id="btn-auth-primary" class="btn btn-primary full-width" data-i18n="btn_signup">Sign Up</button>
+      
+      <div class="social-divider" style="text-align: center; margin: 16px 0; color: var(--text-muted); font-size: 12px; position: relative;">
+        <span data-i18n="social_divider" style="background-color: var(--bg-primary); padding: 0 12px; position: relative; z-index: 1;">Or Continue With</span>
+        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background-color: var(--border-color); z-index: 0;"></div>
+      </div>
+
+      <!-- Social Button Grid -->
+      <div class="social-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+        <button class="btn btn-secondary social-btn" id="btn-social-google">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.41 0-6.19-2.78-6.19-6.19s2.78-6.19 6.19-6.19c1.7 0 3.07.59 4.12 1.56l3.07-3.07C19.24 2.23 15.97 1 12.24 1c-6.075 0-11 4.925-11 11s4.925 11 11 11c5.93 0 10.58-4.14 10.58-10.58 0-.47-.04-.95-.12-1.41H12.24z"/></svg>
+          Google
+        </button>
+        <button class="btn btn-secondary social-btn" id="btn-social-microsoft">
+          <svg viewBox="0 0 23 23" width="16" height="16" fill="currentColor"><path d="M0 0h11v11H0z" fill="#f25022"/><path d="M12 0h11v11H12z" fill="#7fba00"/><path d="M0 12h11v11H0z" fill="#00a4ef"/><path d="M12 12h11v11H12z" fill="#ffb900"/></svg>
+          Microsoft
+        </button>
+        <button class="btn btn-secondary social-btn" id="btn-social-facebook">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/></svg>
+          Facebook
+        </button>
+        <button class="btn btn-secondary social-btn" id="btn-social-linkedin">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+          LinkedIn
+        </button>
+      </div>
+
+      <!-- Email Signup -->
+      <button class="btn btn-secondary full-width social-btn" id="btn-social-email" style="margin-top: 12px; display: flex; justify-content: center; gap: 8px;">
+        <i data-feather="mail" style="width: 16px; height: 16px;"></i>
+        <span data-i18n="social_email">Sign Up with Email</span>
+      </button>
+      
+      <!-- Mode Toggle -->
+      <button id="btn-auth-toggle" class="btn btn-ghost full-width" style="margin-top: 16px;" data-i18n="auth_toggle_login">
+        Already have an account? Log In
+      </button>
+    </div>
+  </div>
+</section>

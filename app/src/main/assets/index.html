@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Communication Coach - For Corporates</title>
+  <meta name="description" content="AI-powered corporate communication and professional personality coach. Close the knowing-doing gap and build executive presence.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="brand_system/brand_tokens.css">
+  <link rel="stylesheet" href="brand_system/animation_system.css">
+  <link rel="stylesheet" href="start_screens/start_screens.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+
+  <!-- App Wrapper Constraints to simulate Hybrid Mobile view -->
+  <main class="app-container">
+
+    <!-- In-App Nudge Toast Banner -->
+    <div id="in-app-nudge-toast" class="nudge-toast" style="display: none;">
+      <div class="nudge-toast-content">
+        <span class="nudge-toast-title" id="nudge-toast-title">Streak Warning</span>
+        <p class="nudge-toast-message" id="nudge-toast-msg">Practice now to maintain your streak.</p>
+      </div>
+    </div>
+
+    <!-- Screen 1: Splash Screen -->
+    <section id="screen-splash" class="screen active">
+      <div class="splash-content">
+        <div class="logo-text" style="font-size: 32px; letter-spacing: 2px;">COMM COACH</div>
+        <div class="logo-subtitle">For Corporates</div>
+        <div class="spinner"></div>
+        <div class="version-label">v1.0.0</div>
+      </div>
+    </section>
+
+    <!-- Screen 2: Welcome / Onboarding Slider Carousel -->
+    <section id="screen-welcome" class="screen">
+      <div class="flex-column full-height justify-between pad-24">
+        <!-- Welcomer Header -->
+        <div class="welcome-header text-center" style="position: relative; height: 48px;">
+          <!-- Language Selector -->
+          <div style="position: absolute; right: 0; top: 0;">
+            <select class="lang-selector" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; padding: 4px 8px; border-radius: 6px;">
+              <option value="en">English</option>
+              <option value="zh">Mandarin</option>
+              <option value="hi">हिन्दी</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="ar">العربية</option>
+              <option value="bn">বাংলা</option>
+              <option value="pt">Português</option>
+              <option value="ru">Русский</option>
+              <option value="ur">اردو</option>
+              <option value="id">Bahasa</option>
+              <option value="de">Deutsch</option>
+              <option value="ja">日本語</option>
+              <option value="pcm">Pidgin</option>
+              <option value="arz">Egyptian</option>
+              <option value="mr">मराठी</option>
+              <option value="te">తెలుగు</option>
+              <option value="tr">Türkçe</option>
+              <option value="ta">தமிழ்</option>
+              <option value="yue">Cantonese</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="wuu">Wu Chinese</option>
+              <option value="tl">Tagalog</option>
+              <option value="ko">한국어</option>
+              <option value="fa">فارسی</option>
+              <option value="th">ไทย</option>
+              <option value="it">Italiano</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Carousel Slides -->
+        <div id="welcome-carousel-slides" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 24px; position: relative;">
+          
+          <!-- Slide 1 -->
+          <div class="carousel-slide active" data-slide="0" style="display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
+            <svg viewBox="0 0 100 100" width="120" height="120" style="color: var(--primary); filter: drop-shadow(0 0 8px var(--primary-glow));">
+              <path fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="4,4" d="M25 50h50"/>
+              <circle cx="20" cy="50" r="10" fill="none" stroke="currentColor" stroke-width="4"/>
+              <path fill="currentColor" d="M16 47h8v6h-8zm60-15v20c0 4.4-3.6 8-8 8h-4v6h8c7.7 0 14-6.3 14-14V32h-10z"/>
+            </svg>
+            <h2 class="welcome-title" data-i18n="slide_1_title" style="font-size: 20px;">The Knowing-Doing Gap</h2>
+            <p class="welcome-subtitle" data-i18n="slide_1_desc" style="white-space: pre-line; line-height: 1.6;">
+              Challenge: Knowing how to communicate isn't enough; we freeze in high-stakes meetings.
+              Solution: Practice daily muscle-memory drills to deliver ideas under pressure.
+            </p>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="carousel-slide" data-slide="1" style="display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
+            <svg viewBox="0 0 100 100" width="120" height="120" style="color: var(--warning); filter: drop-shadow(0 0 8px rgba(245,158,11,0.2));">
+              <path fill="none" stroke="currentColor" stroke-width="4" d="M15 50h70 M30 30h40 M20 70h50"/>
+              <circle cx="50" cy="50" r="24" fill="none" stroke="currentColor" stroke-width="4"/>
+            </svg>
+            <h2 class="welcome-title" data-i18n="slide_2_title" style="font-size: 20px;">Filler Word Overload</h2>
+            <p class="welcome-subtitle" data-i18n="slide_2_desc" style="white-space: pre-line; line-height: 1.6;">
+              Challenge: Words like 'uhm' and 'basically' dilute your authority and executive presence.
+              Solution: Real-time audio analyzer counts fillers to help you build clean verbal delivery.
+            </p>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="carousel-slide" data-slide="2" style="display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
+            <svg viewBox="0 0 100 100" width="120" height="120" style="color: var(--success); filter: drop-shadow(0 0 8px rgba(16,185,129,0.2));">
+              <polygon points="50,15 15,85 85,85" fill="none" stroke="currentColor" stroke-width="4"/>
+              <line x1="33" y1="50" x2="67" y2="50" stroke="currentColor" stroke-width="3"/>
+              <line x1="22" y1="70" x2="78" y2="70" stroke="currentColor" stroke-width="3"/>
+            </svg>
+            <h2 class="welcome-title" data-i18n="slide_3_title" style="font-size: 20px;">Unstructured Reporting</h2>
+            <p class="welcome-subtitle" data-i18n="slide_3_desc" style="white-space: pre-line; line-height: 1.6;">
+              Challenge: Giving rambling, unstructured status updates that lose decision makers.
+              Solution: Master framework-driven templates like PREP and STAR to state impact first.
+            </p>
+          </div>
+
+          <!-- Slide 4 -->
+          <div class="carousel-slide" data-slide="3" style="display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
+            <svg viewBox="0 0 100 100" width="120" height="120" style="color: var(--primary); filter: drop-shadow(0 0 8px var(--primary-glow));">
+              <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" stroke-width="4"/>
+              <polyline points="25,65 42,40 58,55 75,30" fill="none" stroke="currentColor" stroke-width="4"/>
+              <circle cx="75" cy="30" r="4" fill="currentColor"/>
+            </svg>
+            <h2 class="welcome-title" data-i18n="slide_4_title" style="font-size: 20px;">No Objective Feedback</h2>
+            <p class="welcome-subtitle" data-i18n="slide_4_desc" style="white-space: pre-line; line-height: 1.6;">
+              Challenge: Hard to get honest coaching on your pacing, tone, and delivery.
+              Solution: Receive immediate AI diagnostics reports and listen to target model replays.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Slider Dots & Switch CTA -->
+        <div class="slider-controls flex-column items-center gap-12 full-width">
+          <div class="slider-dots" id="welcome-slider-dots" style="display: flex; gap: 8px;">
+            <span class="dot active" data-slide="0" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); cursor: pointer; transition: all 0.2s ease;"></span>
+            <span class="dot" data-slide="1" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--border-color); cursor: pointer; transition: all 0.2s ease;"></span>
+            <span class="dot" data-slide="2" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--border-color); cursor: pointer; transition: all 0.2s ease;"></span>
+            <span class="dot" data-slide="3" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--border-color); cursor: pointer; transition: all 0.2s ease;"></span>
+          </div>
+          <button id="btn-welcome-next" class="btn btn-primary full-width" data-i18n="btn_next_slide">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 3: Auth Screen -->
+    <section id="screen-auth" class="screen">
+      <div class="flex-column full-height justify-between pad-24" style="overflow-y: auto;">
+        <div>
+          <div class="step-indicator" id="auth-flow-title" data-i18n="auth_title">Create Account</div>
+          <h2 class="section-title" id="auth-main-heading" data-i18n="auth_heading">Join Comm Coach</h2>
+          <p class="section-subtitle" id="auth-flow-subtitle" data-i18n="auth_subtitle">Start training your executive presence today.</p>
+
+          <div class="flex-column gap-16 pad-top-12">
+            <!-- Unified Input -->
+            <div class="input-group" id="group-login-unified" style="display: none;">
+              <label for="auth-login-id" class="input-label" data-i18n="auth_login_label">Username, Email, or Mobile Number</label>
+              <input type="text" id="auth-login-id" class="form-input" placeholder="Enter username, email, or phone">
+            </div>
+
+            <!-- Phone Input -->
+            <div class="input-group" id="group-signup-phone">
+              <label for="auth-phone" class="input-label" data-i18n="auth_phone_label">Mobile Number</label>
+              <div class="phone-input-wrapper" style="display: flex; gap: 8px;">
+                <select id="auth-phone-prefix" class="form-input" style="width: 90px; padding: 12px 6px; text-align: center;">
+                  <option value="+91">+91</option>
+                  <option value="+1">+1</option>
+                  <option value="+44">+44</option>
+                  <option value="+971">+971</option>
+                </select>
+                <input type="tel" id="auth-phone" class="form-input" placeholder="98765 43210" style="flex: 1;">
+              </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="input-group">
+              <label for="auth-password" class="input-label" data-i18n="auth_password_label">Password</label>
+              <input type="password" id="auth-password" class="form-input" placeholder="••••••••">
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-cta-block" style="margin-top: 24px;">
+          <button id="btn-auth-primary" class="btn btn-primary full-width" data-i18n="btn_signup">Sign Up</button>
+          
+          <div class="social-divider" style="text-align: center; margin: 16px 0; color: var(--text-muted); font-size: 12px; position: relative;">
+            <span data-i18n="social_divider" style="background-color: var(--bg-primary); padding: 0 12px; position: relative; z-index: 1;">Or Continue With</span>
+            <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background-color: var(--border-color); z-index: 0;"></div>
+          </div>
+
+          <!-- Social Button Grid -->
+          <div class="social-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+            <button class="btn btn-secondary social-btn" id="btn-social-google">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.41 0-6.19-2.78-6.19-6.19s2.78-6.19 6.19-6.19c1.7 0 3.07.59 4.12 1.56l3.07-3.07C19.24 2.23 15.97 1 12.24 1c-6.075 0-11 4.925-11 11s4.925 11 11 11c5.93 0 10.58-4.14 10.58-10.58 0-.47-.04-.95-.12-1.41H12.24z"/></svg>
+              Google
+            </button>
+            <button class="btn btn-secondary social-btn" id="btn-social-microsoft">
+              <svg viewBox="0 0 23 23" width="16" height="16" fill="currentColor"><path d="M0 0h11v11H0z" fill="#f25022"/><path d="M12 0h11v11H12z" fill="#7fba00"/><path d="M0 12h11v11H0z" fill="#00a4ef"/><path d="M12 12h11v11H12z" fill="#ffb900"/></svg>
+              Microsoft
+            </button>
+            <button class="btn btn-secondary social-btn" id="btn-social-facebook">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/></svg>
+              Facebook
+            </button>
+            <button class="btn btn-secondary social-btn" id="btn-social-linkedin">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+              LinkedIn
+            </button>
+          </div>
+
+          <!-- Email Signup -->
+          <button class="btn btn-secondary full-width social-btn" id="btn-social-email" style="margin-top: 12px; display: flex; justify-content: center; gap: 8px;">
+            <i data-feather="mail" style="width: 16px; height: 16px;"></i>
+            <span data-i18n="social_email">Sign Up with Email</span>
+          </button>
+          
+          <!-- Mode Toggle -->
+          <button id="btn-auth-toggle" class="btn btn-ghost full-width" style="margin-top: 16px;" data-i18n="auth_toggle_login">
+            Already have an account? Log In
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 4: Current Level Selection -->
+    <section id="screen-current-level" class="screen">
+      <div class="flex-column full-height justify-between pad-24">
+        <div>
+          <div class="step-indicator" data-i18n="step_indicator_1">Step 1 of 3</div>
+          <h2 class="section-title" data-i18n="current_level_title">Your Current Level</h2>
+          <p class="section-subtitle" data-i18n="current_level_desc">Select your current professional tier to baseline your practice scenarios.</p>
+          
+          <div class="level-list" id="current-level-list">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+        <button id="btn-current-level-next" class="btn btn-primary full-width" data-i18n="btn_next">Next Step</button>
+      </div>
+    </section>
+
+    <!-- Screen 5: Target Level Selection -->
+    <section id="screen-target-level" class="screen">
+      <div class="flex-column full-height justify-between pad-24">
+        <div>
+          <div class="step-indicator" data-i18n="step_indicator_2">Step 2 of 3</div>
+          <h2 class="section-title" data-i18n="target_level_title">Your Target Level</h2>
+          <p class="section-subtitle" data-i18n="target_level_desc">Select the level you are aiming for. We will align scenarios to bridge this gap.</p>
+          
+          <div class="level-list" id="target-level-list">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+        <button id="btn-target-level-next" class="btn btn-primary full-width" data-i18n="btn_next">Next Step</button>
+      </div>
+    </section>
+
+    <!-- Screen 6: Microphone & Permissions -->
+    <section id="screen-permissions" class="screen">
+      <div class="flex-column full-height justify-between pad-24 text-center">
+        <div>
+          <div class="step-indicator" data-i18n="step_indicator_3">Step 3 of 3</div>
+          <div class="mic-icon-container">
+            <i data-feather="mic" style="width: 48px; height: 48px; color: var(--primary);"></i>
+          </div>
+          <h2 class="section-title" data-i18n="permissions_title">Enable Audio Drills</h2>
+          <p class="section-subtitle" style="max-width: 280px; margin: 0 auto;" data-i18n="permissions_subtitle">
+            We need Microphone access to record drills and Location access to localise translation engines.
+          </p>
+          
+          <div class="pad-top-24 text-left">
+            <div class="perm-bullet flex-row gap-12 pad-vertical-8">
+              <i data-feather="check-circle" class="text-success"></i>
+              <div>
+                <strong class="font-14" data-i18n="mic_access_title">Microphone Access</strong>
+                <p class="font-12 text-muted" data-i18n="mic_access_desc">To evaluate filler words, pacing, and tone variables.</p>
+              </div>
+            </div>
+            <div class="perm-bullet flex-row gap-12 pad-vertical-8">
+              <i data-feather="check-circle" class="text-success"></i>
+              <div>
+                <strong class="font-14" data-i18n="loc_access_title">Location Access</strong>
+                <p class="font-12 text-muted" data-i18n="loc_access_desc">To optimize regional accent matching (e.g. en-IN).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex-column gap-12 full-width">
+          <button id="btn-permissions-grant" class="btn btn-primary full-width" data-i18n="btn_allow">Allow Access</button>
+          <button id="btn-permissions-skip" class="btn btn-ghost full-width" data-i18n="btn_skip">I'll do it later</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 7: Main Dashboard -->
+    <section id="screen-dashboard" class="screen">
+      <div class="flex-column full-height justify-between">
+        <header class="dashboard-header pad-horizontal-24">
+          <span class="app-title" data-i18n="dashboard_title">Comm Coach</span>
+          <!-- Language Selector -->
+          <select class="lang-selector" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; padding: 4px 8px; border-radius: 6px;">
+            <option value="en">English</option>
+            <option value="zh">Mandarin</option>
+            <option value="hi">हिन्दी</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="ar">العربية</option>
+            <option value="bn">বাংলা</option>
+            <option value="pt">Português</option>
+            <option value="ru">Русский</option>
+            <option value="ur">اردو</option>
+            <option value="id">Bahasa</option>
+            <option value="de">Deutsch</option>
+            <option value="ja">日本語</option>
+            <option value="pcm">Pidgin</option>
+            <option value="arz">Egyptian</option>
+            <option value="mr">मराठी</option>
+            <option value="te">తెలుగు</option>
+            <option value="tr">Türkçe</option>
+            <option value="ta">தமிழ்</option>
+            <option value="yue">Cantonese</option>
+            <option value="vi">Tiếng Việt</option>
+            <option value="wuu">Wu Chinese</option>
+            <option value="tl">Tagalog</option>
+            <option value="ko">한국어</option>
+            <option value="fa">فارسی</option>
+            <option value="th">ไทย</option>
+            <option value="it">Italiano</option>
+          </select>
+        </header>
+
+        <div class="dashboard-scroll-content pad-24">
+          <div class="readiness-card text-center">
+            <div class="ring-container">
+              <svg class="ring-svg" viewBox="0 0 120 120">
+                <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+                <circle class="ring-fill animate-pulse" id="readiness-fill-ring" cx="60" cy="60" r="50"></circle>
+              </svg>
+              <div class="ring-labels">
+                <span class="ring-value" id="dashboard-readiness-val">76%</span>
+                <span class="ring-title" data-i18n="dashboard_readiness">Readiness</span>
+              </div>
+            </div>
+            <p class="readiness-tagline pad-top-12" data-i18n="dashboard_insights">Solid work! You are in the top 15% of managers this week.</p>
+          </div>
+
+          <!-- LinkedIn Verification Promo Banner -->
+          <div class="readiness-card text-center" style="margin-top: 16px; border-color: #0077b5; background-color: rgba(0, 119, 181, 0.05);">
+            <div class="flex-row items-center justify-center gap-8 pad-vertical-8">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="#0077b5" style="flex-shrink:0;"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+              <strong class="font-14" data-i18n="dashboard_linkedin_promo" style="line-height: 1.4;">Get 3 Months Free Pro Tier! Verify your profile via LinkedIn.</strong>
+            </div>
+            <p class="font-12 text-muted" style="margin-top: -4px;" data-i18n="linkedin_verification_note">(Manually verified by experts)</p>
+            <button class="btn btn-secondary full-width btn-linkedin-verify" style="margin-top: 12px; border-color: #0077b5; color: #0077b5; padding: 10px 16px;" data-i18n="btn_verify_linkedin">Verify via LinkedIn</button>
+          </div>
+
+          <div class="actions-grid pad-top-24">
+            <div class="action-card" id="action-speak-studio">
+              <i data-feather="mic" class="card-icon text-primary"></i>
+              <h3 class="card-heading" data-i18n="studio_title">Speak Studio</h3>
+              <p class="level-tagline" data-i18n="studio_desc">Practice oral drills with real-time feedback</p>
+            </div>
+            <div class="action-card" id="action-meeting-recorder">
+              <i data-feather="users" class="card-icon text-primary"></i>
+              <h3 class="card-heading">Meeting Recorder</h3>
+              <p class="level-tagline">Multi-speaker transcript & AI MOM generator</p>
+            </div>
+            <div class="action-card" id="action-ocr-translate">
+              <i data-feather="camera" class="card-icon text-warning"></i>
+              <h3 class="card-heading" data-i18n="ocr_title">Scan & Translate</h3>
+              <p class="level-tagline" data-i18n="ocr_desc">Extract text from images or translate live via lens</p>
+            </div>
+            <div class="action-card" id="action-daily-quiz">
+              <i data-feather="award" class="card-icon text-warning"></i>
+              <h3 class="card-heading" data-i18n="quiz_title">Daily Quiz</h3>
+              <p class="level-tagline" data-i18n="quiz_desc">Verify communication framework bounds</p>
+            </div>
+            <div class="action-card" id="action-browse-library">
+              <i data-feather="book-open" class="card-icon text-success"></i>
+              <h3 class="card-heading" data-i18n="library_title">Library</h3>
+              <p class="level-tagline" data-i18n="library_desc">Browse 10 custom business case drills</p>
+            </div>
+          </div>
+        </div>
+
+        <nav class="bottom-nav">
+          <button class="nav-item active" data-target="screen-dashboard">
+            <i data-feather="grid"></i>
+            <span data-i18n="nav_daily">Daily</span>
+          </button>
+          <button class="nav-item" data-target="screen-library">
+            <i data-feather="book"></i>
+            <span data-i18n="nav_library">Library</span>
+          </button>
+          <button class="nav-item" data-target="screen-profile">
+            <i data-feather="user"></i>
+            <span data-i18n="nav_profile">Profile</span>
+          </button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- Screen 8: Speak Studio / Recorder -->
+    <section id="screen-recorder" class="screen">
+      <div class="flex-column full-height justify-between pad-24">
+        <div>
+          <div class="flex-row justify-between items-center">
+            <button class="btn btn-icon btn-ghost" id="btn-recorder-back">
+              <i data-feather="arrow-left"></i>
+            </button>
+            <span class="step-indicator" data-i18n="studio_title">Speak Studio</span>
+            <div style="width: 40px;"></div>
+          </div>
+
+          <div class="analysis-card pad-top-24">
+            <span class="level-tag" id="recorder-framework-tag">PREP Framework</span>
+            <p class="card-heading pad-top-8" id="recorder-prompt-text" style="font-size: 16px; line-height: 1.5;">
+              Select a scenario from the library or start a default drill.
+            </p>
+          </div>
+
+          <div class="transcription-monitor pad-vertical-24">
+            <p id="transcription-text" class="level-tagline" style="color: var(--text-main); font-style: italic; text-align: center;">
+              Tap record and begin speaking...
+            </p>
+          </div>
+        </div>
+
+        <div class="flex-column items-center gap-16">
+          <div class="timer-label" id="recording-timer">00:00</div>
+          
+          <button id="btn-record-action" class="btn btn-record animate-pulse">
+            <i data-feather="mic" id="record-icon-state" style="width: 28px; height: 28px; color: #fff;"></i>
+          </button>
+
+          <p class="level-tagline text-muted">Tap to start (Limit: 90 seconds)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 9: Daily Quiz -->
+    <section id="screen-quiz" class="screen">
+      <div class="flex-column full-height justify-between pad-24">
+        <div>
+          <div class="flex-row justify-between items-center">
+            <button class="btn btn-icon btn-ghost" id="btn-quiz-back">
+              <i data-feather="arrow-left"></i>
+            </button>
+            <span class="step-indicator" id="quiz-progress-text">Question 1 of 5</span>
+            <div style="width: 40px;"></div>
+          </div>
+
+          <div class="pad-top-24">
+            <h3 class="section-title" id="quiz-question-title">What does the STAR framework stand for?</h3>
+            <div class="options-container pad-top-16" id="quiz-options-box">
+              <!-- Choices populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-quiz-submit" class="btn btn-primary full-width" disabled>Submit Answer</button>
+      </div>
+    </section>
+
+    <!-- Screen 10: Feedback & Deep Analysis -->
+    <section id="screen-feedback" class="screen">
+      <div class="flex-column full-height" style="overflow-y: auto;">
+
+        <!-- Header -->
+        <header class="flex-row justify-between items-center pad-24" style="padding-bottom: 8px;">
+          <button class="btn btn-icon btn-ghost" id="btn-feedback-back">
+            <i data-feather="arrow-left" style="width: 20px; height: 20px;"></i>
+          </button>
+          <h2 class="section-title" style="font-size: 18px; margin: 0;">Deep Analysis</h2>
+          <div style="width: 36px;"></div>
+        </header>
+
+        <div class="pad-horizontal-24" style="padding-bottom: 24px;">
+
+          <!-- Quick Metrics Strip -->
+          <div class="analysis-card" style="margin-bottom: 16px;">
+            <div class="flex-row justify-between items-center" style="gap: 4px; flex-wrap: wrap;">
+              <div class="metric-pill">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span id="feedback-val-pacing">0 WPM</span>
+              </div>
+              <div class="metric-pill">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span id="feedback-val-fillers">0 Fillers</span>
+              </div>
+              <div class="metric-pill">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--success)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span id="feedback-val-jargon">Clean</span>
+              </div>
+              <div class="metric-pill">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                <span id="feedback-val-tone">Neutral</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Head-to-Head Comparison Container -->
+          <div class="comparison-container" style="margin-bottom: 16px;">
+
+            <!-- Your Original Transcript -->
+            <div class="comparison-panel original-panel">
+              <div class="comparison-panel-header">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--error)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                <span>Your Response</span>
+              </div>
+              <p class="comparison-text" id="feedback-original-transcript">
+                Recording transcript will appear here after your drill.
+              </p>
+            </div>
+
+            <!-- Divider Arrow -->
+            <div class="comparison-divider">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            </div>
+
+            <!-- Reframed Expert Version -->
+            <div class="comparison-panel reframed-panel">
+              <div class="comparison-panel-header">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span>Expert Reframed</span>
+              </div>
+              <p class="comparison-text" id="feedback-reframed-transcript">
+                AI-reframed version loading...
+              </p>
+            </div>
+          </div>
+
+          <!-- Issues Detected -->
+          <div class="analysis-card" style="margin-bottom: 16px;">
+            <h4 class="card-heading" style="margin-bottom: 12px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--warning)" stroke-width="2" style="vertical-align: -2px; margin-right: 6px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Issues Detected
+            </h4>
+            <div id="feedback-issues-list" class="feedback-tag-list">
+              <span class="feedback-tag tag-neutral">Awaiting analysis...</span>
+            </div>
+          </div>
+
+          <!-- Key Points Extracted -->
+          <div class="analysis-card" style="margin-bottom: 16px;">
+            <h4 class="card-heading" style="margin-bottom: 12px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2" style="vertical-align: -2px; margin-right: 6px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Key Points
+            </h4>
+            <ul id="feedback-keypoints-list" class="feedback-keypoints">
+              <li>Awaiting analysis...</li>
+            </ul>
+          </div>
+
+          <!-- Tone & Impact Assessment -->
+          <div class="analysis-card" style="margin-bottom: 16px;">
+            <h4 class="card-heading" style="margin-bottom: 12px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2" style="vertical-align: -2px; margin-right: 6px;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+              Tone & Impact
+            </h4>
+            <div id="feedback-tone-analysis" class="feedback-tone-grid">
+              <div class="tone-row">
+                <span class="tone-label">Confidence</span>
+                <div class="tone-bar-track"><div class="tone-bar-fill" id="tone-confidence" style="width: 0%;"></div></div>
+                <span class="tone-value" id="tone-confidence-val">--</span>
+              </div>
+              <div class="tone-row">
+                <span class="tone-label">Clarity</span>
+                <div class="tone-bar-track"><div class="tone-bar-fill" id="tone-clarity" style="width: 0%;"></div></div>
+                <span class="tone-value" id="tone-clarity-val">--</span>
+              </div>
+              <div class="tone-row">
+                <span class="tone-label">Persuasion</span>
+                <div class="tone-bar-track"><div class="tone-bar-fill" id="tone-persuasion" style="width: 0%;"></div></div>
+                <span class="tone-value" id="tone-persuasion-val">--</span>
+              </div>
+              <div class="tone-row">
+                <span class="tone-label">Executive Presence</span>
+                <div class="tone-bar-track"><div class="tone-bar-fill" id="tone-presence" style="width: 0%;"></div></div>
+                <span class="tone-value" id="tone-presence-val">--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Why It Matters -->
+          <div class="analysis-card" style="margin-bottom: 16px;">
+            <h4 class="card-heading" style="margin-bottom: 12px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2" style="vertical-align: -2px; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Why It Matters
+            </h4>
+            <p class="level-tagline" id="feedback-why-matters" style="line-height: 1.7; color: var(--text-main); font-size: 13px;">
+              Impact assessment loading...
+            </p>
+          </div>
+
+          <!-- Coach Insights -->
+          <div class="insights-box" style="margin-bottom: 24px;">
+            <h4 class="card-heading" style="margin-bottom: 8px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2" style="vertical-align: -2px; margin-right: 6px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Coach Summary
+            </h4>
+            <p class="level-tagline pad-top-8" id="feedback-coach-summary" style="line-height: 1.7; color: var(--text-main); font-size: 13px;">
+              Generating expert evaluation...
+            </p>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex-column gap-12 full-width" style="padding-bottom: 32px;">
+            <button id="btn-feedback-tts-replay" class="btn btn-secondary full-width">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+              Listen to Expert Version
+            </button>
+            <button id="btn-feedback-complete" class="btn btn-primary full-width">Back to Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 11: Practice Library -->
+    <section id="screen-library" class="screen">
+      <div class="flex-column full-height justify-between">
+        <header class="dashboard-header pad-horizontal-24">
+          <span class="app-title" data-i18n="library_title">Library</span>
+        </header>
+
+        <div class="dashboard-scroll-content pad-24" id="library-drill-list">
+          <!-- Drill items loaded dynamically -->
+        </div>
+
+        <nav class="bottom-nav">
+          <button class="nav-item" data-target="screen-dashboard">
+            <i data-feather="grid"></i>
+            <span data-i18n="nav_daily">Daily</span>
+          </button>
+          <button class="nav-item active" data-target="screen-library">
+            <i data-feather="book"></i>
+            <span data-i18n="nav_library">Library</span>
+          </button>
+          <button class="nav-item" data-target="screen-profile">
+            <i data-feather="user"></i>
+            <span data-i18n="nav_profile">Profile</span>
+          </button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- Screen 12: User Profile -->
+    <section id="screen-profile" class="screen">
+      <div class="flex-column full-height justify-between">
+        <header class="dashboard-header pad-horizontal-24">
+          <span class="app-title" data-i18n="nav_profile">Profile</span>
+        </header>
+
+        <div class="dashboard-scroll-content pad-24" style="overflow-y: auto;">
+          <div class="flex-row items-center gap-16 pad-vertical-12">
+            <div class="profile-avatar" style="width: 64px; height: 64px; background-color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: #fff;" id="profile-avatar-initials">
+              JD
+            </div>
+            <div>
+              <h3 id="profile-display-name" style="color: var(--text-main);">John Doe</h3>
+              <p class="level-tagline text-muted" id="profile-level-badge">Current: Manager</p>
+            </div>
+          </div>
+
+          <div class="analysis-card pad-top-24">
+            <h4 class="card-heading">Coach Statistics</h4>
+            <div class="flex-row justify-between pad-vertical-8 border-bottom">
+              <span class="text-muted">Total Drill Workouts</span>
+              <strong id="profile-total-drills">24</strong>
+            </div>
+            <div class="flex-row justify-between pad-vertical-8 border-bottom">
+              <span class="text-muted">Completed Quizzes</span>
+              <strong id="profile-total-quizzes">12</strong>
+            </div>
+            <div class="flex-row justify-between pad-vertical-8">
+              <span class="text-muted">Coach Tier Status</span>
+              <strong class="text-primary" id="btn-open-paywall" style="cursor: pointer;">Coach Pro</strong>
+            </div>
+          </div>
+
+          <!-- Resources & Settings Card -->
+          <div class="analysis-card pad-top-24" style="margin-top: 16px;">
+            <h4 class="card-heading">Resources & Settings</h4>
+            <div class="flex-row justify-between pad-vertical-8 border-bottom" id="profile-btn-jargon" style="cursor: pointer;">
+              <span class="text-main">Corporate Jargon Dictionary</span>
+              <i data-feather="chevron-right" style="width: 16px; height: 16px;"></i>
+            </div>
+            <div class="flex-row justify-between pad-vertical-8 border-bottom" id="profile-btn-vocab" style="cursor: pointer;">
+              <span class="text-main">Corporate Vocabulary Dictionary</span>
+              <i data-feather="chevron-right" style="width: 16px; height: 16px;"></i>
+            </div>
+            <div class="flex-row justify-between pad-vertical-8" id="profile-btn-account" style="cursor: pointer;">
+              <span class="text-main">My Account</span>
+              <i data-feather="settings" style="width: 16px; height: 16px;"></i>
+            </div>
+          </div>
+        </div>
+
+        <nav class="bottom-nav">
+          <button class="nav-item" data-target="screen-dashboard">
+            <i data-feather="grid"></i>
+            <span data-i18n="nav_daily">Daily</span>
+          </button>
+          <button class="nav-item" data-target="screen-library">
+            <i data-feather="book"></i>
+            <span data-i18n="nav_library">Library</span>
+          </button>
+          <button class="nav-item active" data-target="screen-profile">
+            <i data-feather="user"></i>
+            <span data-i18n="nav_profile">Profile</span>
+          </button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- Screen 13: Subscription Paywall Upgrade -->
+    <section id="screen-paywall" class="screen">
+      <div class="flex-column full-height justify-between pad-24" style="overflow-y: auto;">
+        <div>
+          <div class="flex-row justify-between items-center">
+            <button class="btn btn-icon btn-ghost" id="btn-paywall-back">
+              <i data-feather="arrow-left"></i>
+            </button>
+            <span class="step-indicator" data-i18n="paywall_title">Upgrade Tier</span>
+            <div style="width: 40px;"></div>
+          </div>
+
+          <div class="text-center pad-top-24">
+            <span class="level-tag text-warning">Coach Professional</span>
+            <h2 class="section-title pad-top-12" data-i18n="paywall_heading">Unlock Unlimited Gym Drills</h2>
+            <p class="section-subtitle" data-i18n="paywall_subtitle">Supercharge your executive presence and presentation skills.</p>
+
+            <div class="paywall-pricing pad-top-24">
+              <span class="price-val" id="paywall-price-amount" style="font-size: 40px; font-weight: 700; color: var(--text-main);">$29</span>
+              <span class="price-duration" style="color: var(--text-muted);">/ Month</span>
+            </div>
+
+            <div class="pad-top-24 text-left">
+              <div class="flex-row gap-8 pad-vertical-8">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span class="font-14 text-main">Unlimited Real-time Speak Studio Drills</span>
+              </div>
+              <div class="flex-row gap-8 pad-vertical-8">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span class="font-14 text-main">Complete Custom Scenario Library Access</span>
+              </div>
+              <div class="flex-row gap-8 pad-vertical-8">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span class="font-14 text-main">Advanced Posture & Video feedback models (V2)</span>
+              </div>
+            </div>
+
+            <!-- LinkedIn Option -->
+            <div class="analysis-card text-center" style="margin-top: 24px; border-color: #0077b5; background-color: rgba(0, 119, 181, 0.05);">
+              <h4 class="card-heading" style="color: #0077b5; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                LinkedIn Verification
+              </h4>
+              <p class="level-tagline pad-top-8" data-i18n="paywall_or_linkedin" style="line-height: 1.4;">OR verify your profile via LinkedIn for 3 Months Free.</p>
+              <p class="font-12 text-muted" style="margin-top: 4px;" data-i18n="linkedin_verification_note">(Manually verified by experts)</p>
+              <button class="btn btn-secondary full-width btn-linkedin-verify" style="margin-top: 12px; border-color: #0077b5; color: #0077b5; padding: 10px 16px;" data-i18n="btn_verify_linkedin">Verify via LinkedIn</button>
+            </div>
+
+          </div>
+        </div>
+
+        <button id="btn-paywall-upgrade" class="btn btn-primary full-width" style="margin-top: 24px;" data-i18n="paywall_upgrade">Upgrade to Pro</button>
+      </div>
+    </section>
+
+    <!-- Screen 14: OCR & Live Translation Lens -->
+    <section id="screen-ocr" class="screen">
+      <div class="flex-column full-height justify-between pad-24" style="overflow-y: auto;">
+        <div>
+          <div class="flex-row justify-between items-center">
+            <button class="btn btn-icon btn-ghost" id="btn-ocr-back">
+              <i data-feather="arrow-left"></i>
+            </button>
+            <span class="step-indicator" data-i18n="ocr_title">Scan & Translate</span>
+            <div style="width: 40px;"></div>
+          </div>
+
+          <!-- Live Camera Preview Frame -->
+          <div class="camera-frame-wrapper pad-top-24" style="position: relative;">
+            <video id="ocr-camera-preview" autoplay playsinline style="width: 100%; height: 280px; object-fit: cover; border-radius: var(--radius-md); background: #000;"></video>
+            <!-- Overlay scanning rectangle -->
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 50%; border: 2px dashed var(--primary); border-radius: 8px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.4); z-index: 2;"></div>
+          </div>
+
+          <!-- Controls Mode & Target Select -->
+          <div class="flex-row justify-between items-center pad-top-16 gap-8">
+            <div class="flex-row gap-8" id="ocr-mode-chips">
+              <button class="chip active" id="btn-ocr-mode-live" data-i18n="ocr_mode_live">Live Lens</button>
+              <button class="chip" id="btn-ocr-mode-capture" data-i18n="ocr_mode_capture">Capture Photo</button>
+            </div>
+            
+            <select id="ocr-target-lang" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-color); color: var(--text-main); font-size: 12px; padding: 6px 12px; border-radius: 6px; flex: 1;">
+              <option value="en">English</option>
+              <option value="zh">Mandarin</option>
+              <option value="hi">Hindi</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="ar">Arabic</option>
+            </select>
+          </div>
+
+          <!-- OCR Results Output Box -->
+          <div class="analysis-card pad-top-24">
+            <div class="pad-vertical-8 border-bottom">
+              <span class="text-muted font-12" data-i18n="original_text_label">Detected Text</span>
+              <p id="ocr-text-original" style="font-size: 14px; margin-top: 4px; color: var(--text-main); font-style: italic;">
+                Align text inside lens frame...
+              </p>
+            </div>
+            <div class="pad-vertical-8">
+              <span class="text-muted font-12" data-i18n="translated_text_label">Translation</span>
+              <p id="ocr-text-translated" style="font-size: 15px; margin-top: 4px; color: var(--primary); font-weight: 700;">
+                Waiting for input...
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-column gap-12 full-width" style="margin-top: 24px;">
+          <button id="btn-ocr-shutter" class="btn btn-primary full-width" style="display: none;">
+            <i data-feather="camera" style="margin-right: 8px;"></i> <span data-i18n="btn_ocr_capture">Capture</span>
+          </button>
+          
+          <button id="btn-ocr-pronounce" class="btn btn-secondary full-width" disabled>
+            <i data-feather="volume-2" style="margin-right: 8px;"></i> <span data-i18n="btn_pronounce">Listen Pronunciation</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 15: Corporate Jargon Dictionary -->
+    <section id="screen-jargon-dict" class="screen">
+      <div class="flex-column full-height justify-between pad-24">
+        <div style="flex: 1; display: flex; flex-direction: column;">
+          <div class="flex-row justify-between items-center">
+            <button class="btn btn-icon btn-ghost" id="btn-jargon-back">
+              <i data-feather="arrow-left"></i>
+            </button>
+            <span class="step-indicator">Jargon Dictionary</span>
+            <div style="width: 40px;"></div>
+          </div>
+
+          <div class="pad-top-24">
+            <input type="text" id="input-jargon-search" class="form-input" placeholder="Search jargon terms (e.g. synergy)">
+          </div>
+
+          <div class="dashboard-scroll-content pad-top-16" id="jargon-terms-list" style="flex: 1; overflow-y: auto;">
+            <!-- Terms populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 16: Corporate Vocabulary Dictionary -->
+    <section id="screen-vocab-dict" class="screen">
+      <div class="flex-column full-height justify-between pad-24">
+        <div style="flex: 1; display: flex; flex-direction: column;">
+          <div class="flex-row justify-between items-center">
+            <button class="btn btn-icon btn-ghost" id="btn-vocab-back">
+              <i data-feather="arrow-left"></i>
+            </button>
+            <span class="step-indicator">Vocabulary Dictionary</span>
+            <div style="width: 40px;"></div>
+          </div>
+
+          <div class="pad-top-24">
+            <input type="text" id="input-vocab-search" class="form-input" placeholder="Search high-impact vocabulary">
+          </div>
+
+          <div class="dashboard-scroll-content pad-top-16" id="vocab-words-list" style="flex: 1; overflow-y: auto;">
+            <!-- Words populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 17: My Account Screen -->
+    <section id="screen-my-account" class="screen">
+      <div class="flex-column full-height justify-between pad-24">
+        <div>
+          <div class="flex-row justify-between items-center">
+            <button class="btn btn-icon btn-ghost" id="btn-account-back">
+              <i data-feather="arrow-left"></i>
+            </button>
+            <span class="step-indicator">My Account</span>
+            <div style="width: 40px;"></div>
+          </div>
+
+          <div class="pad-top-24 flex-column gap-16">
+            <div class="input-group">
+              <label for="input-account-name" class="input-label">Display Name</label>
+              <input type="text" id="input-account-name" class="form-input" value="John Doe">
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Email Address</label>
+              <input type="text" class="form-input" value="john.doe@corporate.com" disabled style="background-color: var(--bg-surface-elevated); border-color: var(--border-color); color: var(--text-muted);">
+            </div>
+
+            <div class="pad-top-12 flex-column gap-12">
+              <button class="btn btn-secondary full-width" id="btn-account-reset-pwd">
+                <i data-feather="key" style="width: 16px; height: 16px; margin-right: 8px;"></i> Request Password Reset
+              </button>
+              <button class="btn btn-secondary full-width" id="btn-account-delete" style="border-color: #ef4444; color: #ef4444;">
+                <i data-feather="trash-2" style="width: 16px; height: 16px; margin-right: 8px;"></i> Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary full-width" id="btn-account-logout">Log Out</button>
+      </div>
+    </section>
+
+    <!-- Dynamic Dialog Overlay: Pitch Customizer Dialog -->
+    <dialog class="modal-dialog" id="pitch-customizer-dialog">
+      <div class="flex-column gap-16 pad-24">
+        <div class="flex-row justify-between items-center">
+          <h3 class="card-heading">Customize Scenario</h3>
+          <button class="btn btn-icon btn-ghost" id="btn-pitch-customizer-close">
+            <i data-feather="x"></i>
+          </button>
+        </div>
+
+        <div class="flex-column gap-12">
+          <label class="input-label">Select Target Audience</label>
+          <div class="library-chips-container pad-vertical-12" id="pitch-audience-chips" style="overflow: visible; display: flex; flex-wrap: wrap; gap: 8px;">
+            <button class="chip active" data-audience="client" data-framework="PREP">Client (PREP)</button>
+            <button class="chip" data-audience="investor" data-framework="Pyramid">Investor (Pyramid)</button>
+            <button class="chip" data-audience="management" data-framework="Pyramid">Management (Pyramid)</button>
+            <button class="chip" data-audience="team" data-framework="STAR">Team (STAR)</button>
+          </div>
+
+          <!-- Preview Card -->
+          <div class="analysis-card pad-top-24">
+            <h4 class="card-heading">Generated Scenario</h4>
+            <p id="pitch-preview-text" class="level-tagline" style="line-height: 1.5; color: var(--text-main);">
+              Propose a cloud database migration project to a Client. Focus on security and cost alignment.
+            </p>
+          </div>
+        </div>
+
+        <button id="btn-pitch-launch-studio" class="btn btn-primary full-width">Start Pitch Studio</button>
+      </div>
+    </dialog>
+
+    <!-- Screen 18: Meeting Recorder & MOM Generator -->
+    <section id="screen-meeting-recorder" class="screen">
+      <div class="flex-column full-height justify-between pad-24" style="overflow-y: auto;">
+        <div>
+          <!-- Header -->
+          <div class="flex-row justify-between items-center">
+            <button class="btn btn-icon btn-ghost" id="btn-meeting-back">
+              <i data-feather="arrow-left"></i>
+            </button>
+            <span class="step-indicator">Meeting Recorder & MOM</span>
+            <div style="width: 40px;"></div>
+          </div>
+
+          <!-- Meeting Setup Container -->
+          <div id="container-meeting-setup" class="analysis-card pad-top-16" style="margin-top: 16px;">
+            <h3 class="card-heading" style="margin-bottom: 12px;">Meeting Setup</h3>
+            
+            <div style="margin-bottom: 12px;">
+              <span class="text-muted font-12">Meeting Title / Topic</span>
+              <input type="text" id="input-meeting-title" class="form-input" placeholder="e.g. Q3 Strategic Planning Sync" style="margin-top: 4px;">
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <span class="text-muted font-12">Register Meeting Speakers</span>
+              <div class="flex-row gap-8" style="margin-top: 4px;">
+                <input type="text" id="input-speaker-name" class="form-input" placeholder="e.g. Sarah (Product VP)" style="flex: 1;">
+                <button id="btn-add-speaker" class="btn btn-secondary" style="padding: 8px 16px;">Add</button>
+              </div>
+            </div>
+
+            <!-- Active Speaker Badges List -->
+            <div id="meeting-speakers-chips" class="flex-row gap-8" style="flex-wrap: wrap; margin-top: 8px;">
+              <!-- Dynamically populated chips -->
+            </div>
+            <p class="font-12 text-muted" style="margin-top: 8px;" id="speaker-count-label">Speakers Identified: 0</p>
+          </div>
+
+          <!-- Active Recording & Live Diarized Transcript -->
+          <div id="container-meeting-active" class="pad-top-16" style="display: none;">
+            <div class="analysis-card" style="margin-bottom: 12px; background: rgba(124, 58, 237, 0.05); border-color: var(--primary);">
+              <div class="flex-row justify-between items-center">
+                <span class="font-13 font-700" style="color: var(--primary);" id="active-meeting-topic">Meeting in Progress</span>
+                <span class="timer-label" id="meeting-timer" style="font-size: 14px;">00:00</span>
+              </div>
+              <p class="font-12 text-muted" id="active-speaker-status" style="margin-top: 4px;">Select active speaker speaking now:</p>
+              
+              <!-- Live Speaker Switcher Bar -->
+              <div id="meeting-speaker-switcher" class="flex-row gap-8" style="flex-wrap: wrap; margin-top: 8px;">
+                <!-- Speaker buttons -->
+              </div>
+            </div>
+
+            <div class="transcription-monitor pad-12" style="max-height: 240px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+              <div id="meeting-live-transcript" class="flex-column gap-12">
+                <p class="font-12 text-muted text-center" style="font-style: italic;">Live speaker transcripts will stream here...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generated MOM Container -->
+          <div id="container-meeting-mom" class="pad-top-16" style="display: none;">
+            <div class="analysis-card" style="margin-bottom: 16px; border-color: var(--success);">
+              <h3 class="card-heading" style="color: var(--success); margin-bottom: 8px;">Minutes of Meeting (MOM)</h3>
+              <p class="font-12 text-muted" id="mom-generated-date">Generated on: --</p>
+              
+              <div class="border-bottom pad-vertical-8" style="margin-top: 8px;">
+                <span class="font-12 text-muted">Executive Summary</span>
+                <p class="font-13 text-main" id="mom-summary" style="margin-top: 4px; line-height: 1.6;"></p>
+              </div>
+
+              <div class="border-bottom pad-vertical-8">
+                <span class="font-12 text-muted">Key Discussion Points</span>
+                <div id="mom-key-points" class="font-13 text-main" style="margin-top: 4px; line-height: 1.6;"></div>
+              </div>
+
+              <div class="border-bottom pad-vertical-8">
+                <span class="font-12 text-muted">Action Items & Deliverables</span>
+                <div id="mom-action-items" class="font-13 text-main" style="margin-top: 4px; line-height: 1.6;"></div>
+              </div>
+
+              <div class="pad-vertical-8">
+                <span class="font-12 text-muted">Decisions Made</span>
+                <div id="mom-decisions" class="font-13 text-main" style="margin-top: 4px; line-height: 1.6;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meeting Action Controls -->
+        <div class="pad-top-16">
+          <button id="btn-meeting-start" class="btn btn-primary full-width">Start Meeting Recording</button>
+          <button id="btn-meeting-stop" class="btn btn-warning full-width" style="display: none;">End Meeting & Generate MOM</button>
+          <div id="group-mom-actions" class="flex-column gap-8" style="display: none;">
+            <button id="btn-mom-export" class="btn btn-secondary full-width">Export MOM & Save File</button>
+            <button id="btn-meeting-new" class="btn btn-primary full-width">Start New Meeting</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dynamic Dialog Overlay: LinkedIn Verification Confirmation Dialog -->
+    <dialog class="modal-dialog" id="linkedin-verification-dialog">
+      <div class="flex-column gap-16 pad-24 text-center">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="#0077b5" style="margin: 0 auto;"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+        <h3 class="card-heading">Verification Submitted</h3>
+        <p class="level-tagline" style="line-height: 1.5; color: var(--text-main);">
+          Your profile has been submitted for verification. Our experts will manually check it and activate your 3-month free trial within 24 hours.
+        </p>
+        <button id="btn-linkedin-confirm-close" class="btn btn-primary full-width">Done</button>
+      </div>
+    </dialog>
+
+  </main>
+
+  <!-- Application Logic Dependencies -->
+  <script src="brand_system/translations.js"></script>
+  <script src="permissions/permissions.js"></script>
+  <script src="start_screens/start_screens.js"></script>
+  
+  <!-- CCOS Modular System Core Bootstrappers -->
+  <script src="bootstrap.js"></script>
+  <script src="core/State.js"></script>
+  <script src="core/Navigation.js"></script>
+  <script src="core/AndroidBridge.js"></script>
+  <script src="core/i18n.js"></script>
+  <script src="core/Nudges.js"></script>
+  <script src="core/RecordingStorage.js"></script>
+  
+  <!-- Onboarding & Setup Flows -->
+  <script src="onboarding/WelcomeScreen.js"></script>
+  <script src="onboarding/LevelSelection.js"></script>
+  <script src="onboarding/Permissions.js"></script>
+  
+  <!-- Daily Dashboard modules -->
+  <script src="dashboard/Dashboard.js"></script>
+  <script src="dashboard/DailyQuiz.js"></script>
+  <script src="dashboard/OCRTranslate.js"></script>
+  <script src="dashboard/JargonDict.js"></script>
+  <script src="dashboard/VocabDict.js"></script>
+  <script src="dashboard/MeetingRecorder.js"></script>
+  
+  <!-- Speak Studio Practice & Evaluator tabs -->
+  <script src="practice/SpeakStudio.js"></script>
+  <script src="practice/PracticeLibrary.js"></script>
+  <script src="practice/FeedbackSummary.js"></script>
+  
+  <!-- User Profile and PPP Paywalls -->
+  <script src="user/Profile.js"></script>
+  <script src="user/SubscriptionPaywall.js"></script>
+  <script src="user/MyAccount.js"></script>
+  
+  <!-- Core Practice Module Scenarios (5.1.1 to 5.1.9) -->
+  <script src="modules/SelfIntroduction.js"></script>
+  <script src="modules/DailyMeetingCommunication.js"></script>
+  <script src="modules/ClientHandling.js"></script>
+  <script src="modules/InternalCriticism.js"></script>
+  <script src="modules/ClientNegotiation.js"></script>
+  <script src="modules/ClientRelationship.js"></script>
+  <script src="modules/UnifiedPitching.js"></script>
+  <script src="modules/EdgeCases.js"></script>
+  <script src="modules/AppreciationHandling.js"></script>
+</body>
+</html>
