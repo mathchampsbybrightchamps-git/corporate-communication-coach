@@ -22,6 +22,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
 import org.json.JSONObject
+import org.json.JSONArray
 
 class MainActivity : AppCompatActivity() {
 
@@ -166,6 +167,35 @@ class MainActivity : AppCompatActivity() {
                 put("contents", JSONObject().apply {
                     put("parts", JSONObject().put("text", prompt))
                 })
+            }
+
+            val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+            sendPostRequest(url, json.toString()) { response ->
+                runOnUiThread {
+                    myWebView.evaluateJavascript("javascript:$jsCallbackMethod('${escapeJsString(response)}')", null)
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun processOCRImage(base64Data: String, targetLang: String, jsCallbackMethod: String) {
+            val cleanBase64 = if (base64Data.contains(",")) base64Data.split(",")[1] else base64Data
+            val promptText = "Extract all text present in this image. Translate the extracted text into target language code '$targetLang'. Return JSON: {\"detected\":\"[Extracted text]\",\"translated\":\"[Translated text]\"}"
+            
+            val partsArray = JSONArray().apply {
+                put(JSONObject().put("text", promptText))
+                put(JSONObject().put("inline_data", JSONObject().apply {
+                    put("mime_type", "image/jpeg")
+                    put("data", cleanBase64)
+                }))
+            }
+
+            val contentsArray = JSONArray().apply {
+                put(JSONObject().put("parts", partsArray))
+            }
+
+            val json = JSONObject().apply {
+                put("contents", contentsArray)
             }
 
             val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"

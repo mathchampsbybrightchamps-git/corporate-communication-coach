@@ -228,7 +228,7 @@ CommCoach.OCRTranslate = {
             }
             if (videoPreview) videoPreview.style.display = 'none';
             this.capturedImageData = event.target.result;
-            this.performTranslation();
+            this.processImageData(this.capturedImageData);
           };
           reader.readAsDataURL(file);
         }
@@ -243,7 +243,11 @@ CommCoach.OCRTranslate = {
 
     if (targetSelect) {
       targetSelect.addEventListener('change', () => {
-        this.performTranslation(true);
+        if (this.capturedImageData) {
+          this.processImageData(this.capturedImageData);
+        } else {
+          this.performTranslation(true);
+        }
       });
     }
 
@@ -326,9 +330,9 @@ CommCoach.OCRTranslate = {
     this.performTranslation();
     this.interval = setInterval(() => {
       if (this.mode === 'live') {
-        this.performTranslation();
+        this.captureAndProcessFrame();
       }
-    }, 3000);
+    }, 4000);
   },
 
   captureAndProcessFrame() {
@@ -346,6 +350,28 @@ CommCoach.OCRTranslate = {
         console.warn("Canvas draw error", e);
       }
     }
+    this.processImageData(this.capturedImageData);
+  },
+
+  processImageData(base64Image) {
+    const originalEl = document.getElementById('ocr-text-original');
+    const translatedEl = document.getElementById('ocr-text-translated');
+    const targetSelect = document.getElementById('ocr-target-lang');
+    const targetCode = targetSelect ? targetSelect.value : 'hi';
+
+    if (originalEl) originalEl.innerText = "Analyzing image & extracting text...";
+    if (translatedEl) translatedEl.innerText = "Translating extracted text...";
+
+    if (base64Image && window.AndroidBridge && typeof window.AndroidBridge.processOCRImage === 'function') {
+      try {
+        window.AndroidBridge.processOCRImage(base64Image, targetCode, 'onOCRResultComplete');
+        return;
+      } catch (e) {
+        console.warn("Native processOCRImage bridge call failed", e);
+      }
+    }
+
+    // Fallback: Perform offline translation matching
     this.performTranslation();
   },
 
@@ -407,5 +433,39 @@ CommCoach.OCRTranslate = {
         console.warn("Speech synthesis error", e);
       }
     }
+  }
+};
+
+// Global OCR AI callback handler
+window.onOCRResultComplete = function(respStr) {
+  try {
+    let parsed;
+    try {
+      const apiResp = JSON.parse(respStr);
+      if (apiResp.candidates && apiResp.candidates[0] && apiResp.candidates[0].content) {
+        const rawText = apiResp.candidates[0].content.parts[0].text;
+        const cleanJson = rawText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+        parsed = JSON.parse(cleanJson);
+      } else {
+        parsed = JSON.parse(respStr);
+      }
+    } catch (innerErr) {
+      const cleanJson = respStr.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+      parsed = JSON.parse(cleanJson);
+    }
+
+    const originalEl = document.getElementById('ocr-text-original');
+    const translatedEl = document.getElementById('ocr-text-translated');
+
+    if (parsed.detected && originalEl) {
+      originalEl.innerText = parsed.detected;
+    }
+    if (parsed.translated && translatedEl) {
+      translatedEl.innerText = parsed.translated;
+      CommCoach.OCRTranslate.lastTranslatedText = parsed.translated;
+    }
+  } catch (e) {
+    console.error("OCR result parse failed", e);
+    CommCoach.OCRTranslate.performTranslation();
   }
 };
