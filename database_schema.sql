@@ -20,6 +20,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Ensure new columns exist on pre-existing profiles tables
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS designation TEXT DEFAULT 'Corporate Professional';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS department TEXT DEFAULT 'General Management';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_subscription_active BOOLEAN DEFAULT FALSE;
+
 -- ============================================================================
 -- 11.2.9 Username Registry Collection
 -- ============================================================================
