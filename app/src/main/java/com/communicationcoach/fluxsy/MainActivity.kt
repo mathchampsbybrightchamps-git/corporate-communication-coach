@@ -42,6 +42,9 @@ class MainActivity : AppCompatActivity() {
         webSettings.domStorageEnabled = true
         webSettings.allowFileAccess = true
         webSettings.allowContentAccess = true
+        webSettings.mediaPlaybackRequiresUserGesture = false
+        webSettings.allowFileAccessFromFileURLs = true
+        webSettings.allowUniversalAccessFromFileURLs = true
 
         myWebView.webViewClient = WebViewClient()
         
