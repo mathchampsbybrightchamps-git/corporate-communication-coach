@@ -1,5 +1,5 @@
--- CCOS Supabase PostgreSQL Database Schema
--- Copy and run this script in your Supabase SQL Editor (https://app.supabase.com -> SQL Editor)
+-- CCOS Supabase PostgreSQL Database Schema & RLS Access Policies
+-- Copy and run this script in your Supabase SQL Editor: https://supabase.com/dashboard/project/adpmukrybifwwyyiuxqe/sql/new
 
 -- 1. Create Profiles Table
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -45,21 +45,26 @@ CREATE TABLE IF NOT EXISTS public.mom_records (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Enable Row Level Security (RLS) & Grant Access
+-- 4. Enable Row Level Security (RLS) & Grant Access Policies
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.drill_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.mom_records ENABLE ROW LEVEL SECURITY;
 
--- Allow anonymous read/write access for mobile client anon key
+DROP POLICY IF EXISTS "Allow public read access on profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Allow public insert/update access on profiles" ON public.profiles;
 CREATE POLICY "Allow public read access on profiles" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Allow public insert/update access on profiles" ON public.profiles FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Allow public read access on drill_logs" ON public.drill_logs;
+DROP POLICY IF EXISTS "Allow public insert access on drill_logs" ON public.drill_logs;
 CREATE POLICY "Allow public read access on drill_logs" ON public.drill_logs FOR SELECT USING (true);
 CREATE POLICY "Allow public insert access on drill_logs" ON public.drill_logs FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow public read access on mom_records" ON public.mom_records;
+DROP POLICY IF EXISTS "Allow public insert access on mom_records" ON public.mom_records;
 CREATE POLICY "Allow public read access on mom_records" ON public.mom_records FOR SELECT USING (true);
 CREATE POLICY "Allow public insert access on mom_records" ON public.mom_records FOR INSERT WITH CHECK (true);
 
--- Indexes for lightning fast queries at 100k scale
+-- 5. Indexes for lightning fast queries at 100k scale
 CREATE INDEX IF NOT EXISTS idx_drill_logs_user_id ON public.drill_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_mom_records_user_id ON public.mom_records(user_id);
