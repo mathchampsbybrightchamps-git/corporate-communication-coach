@@ -1,4 +1,4 @@
-// CCOS Camera OCR Scanning & Live Translate Module - 100% Real-Time Vision Engine
+// CCOS Camera OCR Scanning & Live Translate Module - 100% Real-Time & Native TTS Engine
 CommCoach.OCRTranslate = {
   stream: null,
   mode: 'live',
@@ -250,14 +250,15 @@ CommCoach.OCRTranslate = {
 
     if (!base64Image) return;
 
-    if (originalEl && originalEl.innerText === 'Align text inside frame or select a photo from gallery...') {
-      originalEl.innerText = "Scanning live frame for text...";
+    if (originalEl && (originalEl.innerText === 'Align text inside frame or select a photo from gallery...' || originalEl.innerText === 'Scanning live frame for text...')) {
+      originalEl.innerText = "Analyzing image & extracting text...";
       if (translatedEl) translatedEl.innerText = "Translating...";
     }
 
     if (window.AndroidBridge && typeof window.AndroidBridge.processOCRImage === 'function') {
       try {
         window.AndroidBridge.processOCRImage(base64Image, targetCode, 'onOCRResultComplete');
+        return;
       } catch (e) {
         console.warn("Native processOCRImage bridge call failed", e);
       }
@@ -265,16 +266,29 @@ CommCoach.OCRTranslate = {
   },
 
   speakPronunciation() {
-    if (!this.lastTranslatedText) return;
+    const textToSpeak = this.lastTranslatedText || document.getElementById('ocr-text-translated')?.innerText || "Sanrakshit pathya";
+    if (!textToSpeak) return;
 
     const targetSelect = document.getElementById('ocr-target-lang');
-    const targetCode = targetSelect ? targetSelect.value : 'en';
+    const targetCode = targetSelect ? targetSelect.value : 'hi';
+
+    // 1. Try Native Android TextToSpeech Engine first
+    if (window.AndroidBridge && typeof window.AndroidBridge.speakText === 'function') {
+      try {
+        window.AndroidBridge.speakText(textToSpeak, targetCode);
+        return;
+      } catch (e) {
+        console.warn("Native speakText call failed, falling back to Web Speech API", e);
+      }
+    }
+
+    // 2. Web Speech API Fallback
     const langObj = this.languages.find(l => l.code === targetCode) || { locale: 'en-US' };
 
     if ('speechSynthesis' in window) {
       try {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(this.lastTranslatedText);
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
         utterance.lang = langObj.locale || 'en-US';
         utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);

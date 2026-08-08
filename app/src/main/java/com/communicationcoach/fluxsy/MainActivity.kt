@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
@@ -23,10 +24,12 @@ import java.net.URL
 import kotlin.concurrent.thread
 import org.json.JSONObject
 import org.json.JSONArray
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var myWebView: WebView
+    private var textToSpeech: TextToSpeech? = null
     private val PERMISSION_REQUEST_CODE = 101
     private val CHANNEL_ID = "ccos_nudge_channel"
 
@@ -34,6 +37,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         
         supportActionBar?.hide()
+
+        // Init native Android TextToSpeech engine
+        textToSpeech = TextToSpeech(applicationContext) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                textToSpeech?.language = Locale.US
+            }
+        }
 
         myWebView = WebView(this)
         setContentView(myWebView)
@@ -66,34 +76,37 @@ class MainActivity : AppCompatActivity() {
         createNotificationChannel()
         requestHardwarePermissions()
 
+        // Handle native device back button press gracefully
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                myWebView.evaluateJavascript("javascript:if (CommCoach && CommCoach.Navigation) { CommCoach.Navigation.goBack(); } else { false; }") { result ->
+                    if (result == "false" || result == "null") {
+                        isEnabled = false
+                        onBackPressedDispatcher.onBackPressed()
+                    }
+                }
+            }
+        })
+
         // State Retention: Restore WebView session if coming back from background recreation
         if (savedInstanceState != null) {
             myWebView.restoreState(savedInstanceState)
         } else {
             myWebView.loadUrl("file:///android_asset/index.html")
         }
-
-        // Hardware Back Button Handler: Delegate to JS navigation history stack first
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                myWebView.evaluateJavascript(
-                    "javascript:(function(){ if(CommCoach && CommCoach.Navigation){ return CommCoach.Navigation.goBack() ? 'handled' : 'exit'; } return 'exit'; })()"
-                ) { result ->
-                    val cleaned = result?.replace("\"", "") ?: "exit"
-                    if (cleaned != "handled") {
-                        // No JS history left, let the system handle (minimize or exit)
-                        isEnabled = false
-                        onBackPressedDispatcher.onBackPressed()
-                        isEnabled = true
-                    }
-                }
-            }
-        })
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         myWebView.saveState(outState)
+    }
+
+    override fun onDestroy() {
+        if (textToSpeech != null) {
+            textToSpeech?.stop()
+            textToSpeech?.shutdown()
+        }
+        super.onDestroy()
     }
 
     private fun createNotificationChannel() {
@@ -144,6 +157,31 @@ class MainActivity : AppCompatActivity() {
     inner class AndroidBridge {
 
         @JavascriptInterface
+        fun speakText(text: String, langCode: String) {
+            runOnUiThread {
+                try {
+                    val locale = when (langCode.lowercase()) {
+                        "hi" -> Locale("hi", "IN")
+                        "es" -> Locale("es", "ES")
+                        "fr" -> Locale("fr", "FR")
+                        "de" -> Locale("de", "DE")
+                        "ja" -> Locale("ja", "JP")
+                        "zh" -> Locale("zh", "CN")
+                        "ar" -> Locale("ar", "SA")
+                        "ru" -> Locale("ru", "RU")
+                        "pt" -> Locale("pt", "BR")
+                        "it" -> Locale("it", "IT")
+                        else -> Locale.US
+                    }
+                    textToSpeech?.language = locale
+                    textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "CCOS_TTS_ID")
+                } catch (e: Exception) {
+                    android.util.Log.e("CommCoachBridge", "TTS speak error", e)
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun saveStats(drills: Int, quizzes: Int, streak: Int, language: String, level: String) {
             val json = JSONObject().apply {
                 put("fields", JSONObject().apply {
@@ -171,9 +209,7 @@ class MainActivity : AppCompatActivity() {
 
             val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
             sendPostRequest(url, json.toString()) { response ->
-                runOnUiThread {
-                    myWebView.evaluateJavascript("javascript:$jsCallbackMethod('${escapeJsString(response)}')", null)
-                }
+                sendBase64ToJs(jsCallbackMethod, response)
             }
         }
 
@@ -200,9 +236,7 @@ class MainActivity : AppCompatActivity() {
 
             val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
             sendPostRequest(url, json.toString()) { response ->
-                runOnUiThread {
-                    myWebView.evaluateJavascript("javascript:$jsCallbackMethod('${escapeJsString(response)}')", null)
-                }
+                sendBase64ToJs(jsCallbackMethod, response)
             }
         }
 
@@ -210,13 +244,11 @@ class MainActivity : AppCompatActivity() {
         fun verifyLinkedIn(jsCallbackMethod: String) {
             thread {
                 Thread.sleep(1500)
-                runOnUiThread {
-                    val response = JSONObject().apply {
-                        put("status", "pending")
-                        put("message", "Profile submitted successfully.")
-                    }
-                    myWebView.evaluateJavascript("javascript:$jsCallbackMethod('${escapeJsString(response.toString())}')", null)
+                val response = JSONObject().apply {
+                    put("status", "pending")
+                    put("message", "Profile submitted successfully.")
                 }
+                sendBase64ToJs(jsCallbackMethod, response.toString())
             }
         }
 
@@ -224,9 +256,7 @@ class MainActivity : AppCompatActivity() {
         fun launchPlayBilling(jsCallbackMethod: String) {
             thread {
                 Thread.sleep(1000)
-                runOnUiThread {
-                    myWebView.evaluateJavascript("javascript:$jsCallbackMethod('success')", null)
-                }
+                sendBase64ToJs(jsCallbackMethod, "success")
             }
         }
 
@@ -249,27 +279,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        /**
-         * Save text content to local device storage.
-         * Directory structure: Documents/CommunicationCoach/[YYYY-MM MonthName]/[DD-MonthName-YYYY]/
-         * @param fileName  e.g. "Drill_SelfIntro_1430.txt"
-         * @param content   The text content to save
-         * @return          The absolute file path on success, or error message
-         */
         @JavascriptInterface
         fun saveToFile(fileName: String, content: String): String {
             return try {
-                val now = java.util.Calendar.getInstance()
-                val monthNames = arrayOf("January","February","March","April","May","June",
-                    "July","August","September","October","November","December")
-                val year = now.get(java.util.Calendar.YEAR)
-                val month = now.get(java.util.Calendar.MONTH)
-                val day = now.get(java.util.Calendar.DAY_OF_MONTH)
+                val calendar = java.util.Calendar.getInstance()
+                val year = calendar.get(java.util.Calendar.YEAR)
+                val month = calendar.get(java.util.Calendar.MONTH)
+                val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
 
-                val monthFolder = "${year}-${String.format("%02d", month + 1)}_${monthNames[month]}"
+                val monthNames = arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+                val monthFolder = monthNames[month]
                 val dayFolder = "${String.format("%02d", day)}-${monthNames[month]}-${year}"
 
-                // Use app-specific external storage (no special permission needed on Android 10+)
                 val baseDir = getExternalFilesDir(android.os.Environment.DIRECTORY_DOCUMENTS)
                 val targetDir = java.io.File(baseDir, "CommunicationCoach/$monthFolder/$dayFolder")
 
@@ -288,10 +309,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        /**
-         * List all saved recording files for a given date or all dates.
-         * @return JSON array string of file paths
-         */
         @JavascriptInterface
         fun listSavedFiles(): String {
             return try {
@@ -310,6 +327,13 @@ class MainActivity : AppCompatActivity() {
                 org.json.JSONArray(files).toString()
             } catch (e: Exception) {
                 "[]"
+            }
+        }
+
+        private fun sendBase64ToJs(jsCallbackMethod: String, responseText: String) {
+            val b64 = android.util.Base64.encodeToString(responseText.toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP)
+            runOnUiThread {
+                myWebView.evaluateJavascript("javascript:if (typeof window['$jsCallbackMethod'] === 'function') { window['$jsCallbackMethod'](decodeURIComponent(escape(atob('$b64')))); }", null)
             }
         }
 
@@ -337,14 +361,6 @@ class MainActivity : AppCompatActivity() {
                     callback("Exception: ${e.message}")
                 }
             }
-        }
-
-        private fun escapeJsString(str: String): String {
-            return str.replace("\\", "\\\\")
-                      .replace("'", "\\'")
-                      .replace("\"", "\\\"")
-                      .replace("\n", "\\n")
-                      .replace("\r", "\\r")
         }
     }
 }
