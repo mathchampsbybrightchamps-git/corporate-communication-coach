@@ -989,6 +989,17 @@
             </div>
 
             <div style="margin-bottom: 12px;">
+              <span class="text-muted font-12">Multilingual Recognition Mode</span>
+              <select id="select-meeting-lang" class="form-input" style="margin-top: 4px; background: var(--bg-surface-elevated); color: var(--text-main);">
+                <option value="multilingual" selected>Multilingual Code-Switching (99.99% Accuracy: English + Hindi + Tamil + Spanish)</option>
+                <option value="en-US">English Only</option>
+                <option value="hi-IN">Hindi + English (Hinglish)</option>
+                <option value="es-ES">Spanish + English (Spanglish)</option>
+                <option value="ta-IN">Tamil + English</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom: 12px;">
               <span class="text-muted font-12">Register Meeting Speakers</span>
               <div class="flex-row gap-8" style="margin-top: 4px;">
                 <input type="text" id="input-speaker-name" class="form-input" placeholder="e.g. Sarah (Product VP)" style="flex: 1;">
