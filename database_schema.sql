@@ -77,53 +77,53 @@ CREATE TABLE IF NOT EXISTS public.mom_records (
 );
 
 -- ============================================================================
--- 11.2.2 Free Users Database (Derived View)
+-- 11.2.2 Free Users Database (Derived View with RLS Security Invoker)
 -- ============================================================================
-CREATE OR REPLACE VIEW public.users_free AS
+CREATE OR REPLACE VIEW public.users_free WITH (security_invoker = true) AS
 SELECT * FROM public.profiles
 WHERE is_subscription_active = FALSE;
 
 -- ============================================================================
--- 11.2.3 Paid Users Database (Derived View)
+-- 11.2.3 Paid Users Database (Derived View with RLS Security Invoker)
 -- ============================================================================
-CREATE OR REPLACE VIEW public.users_paid AS
+CREATE OR REPLACE VIEW public.users_paid WITH (security_invoker = true) AS
 SELECT * FROM public.profiles
 WHERE is_subscription_active = TRUE;
 
 -- ============================================================================
--- 11.2.4 Active Users Database (DAU & MAU Tracking View)
+-- 11.2.4 Active Users Database (DAU & MAU Tracking View with RLS Security Invoker)
 -- ============================================================================
-CREATE OR REPLACE VIEW public.users_active AS
+CREATE OR REPLACE VIEW public.users_active WITH (security_invoker = true) AS
 SELECT * FROM public.profiles
 WHERE updated_at >= NOW() - INTERVAL '30 days';
 
 -- ============================================================================
--- 11.2.5 Inactive Users Database (Churn Analysis View)
+-- 11.2.5 Inactive Users Database (Churn Analysis View with RLS Security Invoker)
 -- ============================================================================
-CREATE OR REPLACE VIEW public.users_inactive AS
+CREATE OR REPLACE VIEW public.users_inactive WITH (security_invoker = true) AS
 SELECT * FROM public.profiles
 WHERE updated_at < NOW() - INTERVAL '30 days';
 
 -- ============================================================================
--- 11.2.6 Level-Wise Users Database (Cohort View)
+-- 11.2.6 Level-Wise Users Database (Cohort View with RLS Security Invoker)
 -- ============================================================================
-CREATE OR REPLACE VIEW public.users_by_level AS
+CREATE OR REPLACE VIEW public.users_by_level WITH (security_invoker = true) AS
 SELECT current_level, COUNT(*) AS user_count
 FROM public.profiles
 GROUP BY current_level;
 
 -- ============================================================================
--- 11.2.7 Designation-Wise Users Database (B2B Targeting View)
+-- 11.2.7 Designation-Wise Users Database (B2B View with RLS Security Invoker)
 -- ============================================================================
-CREATE OR REPLACE VIEW public.users_by_designation AS
+CREATE OR REPLACE VIEW public.users_by_designation WITH (security_invoker = true) AS
 SELECT designation, COUNT(*) AS user_count
 FROM public.profiles
 GROUP BY designation;
 
 -- ============================================================================
--- 11.2.8 Department-Wise Users Database (Analytics View)
+-- 11.2.8 Department-Wise Users Database (Analytics View with RLS Security Invoker)
 -- ============================================================================
-CREATE OR REPLACE VIEW public.users_by_department AS
+CREATE OR REPLACE VIEW public.users_by_department WITH (security_invoker = true) AS
 SELECT department, COUNT(*) AS user_count
 FROM public.profiles
 GROUP BY department;
