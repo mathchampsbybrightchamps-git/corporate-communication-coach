@@ -47,7 +47,13 @@ class MainActivity : AppCompatActivity() {
         
         myWebView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
-                request.grant(request.resources)
+                runOnUiThread {
+                    try {
+                        request.grant(request.resources)
+                    } catch (e: Exception) {
+                        android.util.Log.e("CommCoachBridge", "Permission grant error", e)
+                    }
+                }
             }
         }
 

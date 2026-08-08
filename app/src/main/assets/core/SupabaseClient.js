@@ -22,7 +22,7 @@ CommCoach.Supabase = {
   },
 
   /**
-   * Sync user profile to Supabase PostgreSQL database
+   * 11.2.1 Sync user profile to Supabase PostgreSQL database
    */
   async syncProfile(stateData) {
     if (!this.isInitialized || !this.client) return;
@@ -34,8 +34,11 @@ CommCoach.Supabase = {
         .upsert({
           id: userId,
           display_name: stateData.displayName || 'User',
+          designation: stateData.designation || 'Corporate Professional',
+          department: stateData.department || 'General Management',
           current_level: stateData.currentLevel || 'L1',
           target_level: stateData.targetLevel || 'L8',
+          is_subscription_active: stateData.isPaidUser || false,
           streak: stateData.streak || 0,
           total_drills: stateData.totalDrills || 0,
           total_quizzes: stateData.totalQuizzes || 0,
@@ -47,6 +50,81 @@ CommCoach.Supabase = {
       else console.log("Supabase profile synced:", userId);
     } catch (e) {
       console.warn("Supabase profile sync exception:", e);
+    }
+  },
+
+  /**
+   * 11.2.9 Username Registry - Check availability
+   */
+  async checkUsernameAvailability(username) {
+    if (!this.isInitialized || !this.client || !username) return true;
+
+    try {
+      const { data, error } = await this.client
+        .from('usernames')
+        .select('username')
+        .eq('username', username.toLowerCase().trim());
+
+      if (error) return true;
+      return (data.length === 0);
+    } catch (e) {
+      return true;
+    }
+  },
+
+  /**
+   * 11.2.9 Username Registry - Register handle
+   */
+  async registerUsername(username, userId) {
+    if (!this.isInitialized || !this.client || !username) return;
+
+    try {
+      await this.client
+        .from('usernames')
+        .insert({
+          username: username.toLowerCase().trim(),
+          user_id: userId,
+          created_at: new Date().toISOString()
+        });
+    } catch (e) {
+      console.warn("Username registration exception:", e);
+    }
+  },
+
+  /**
+   * 11.2.10 Daily Usage Counter - Increment drills/quizzes count
+   */
+  async incrementDailyUsage(userId, usageType = 'drill') {
+    if (!this.isInitialized || !this.client) return;
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const uId = userId || CommCoach.state.userId || 'user_default';
+
+      const { data: existing } = await this.client
+        .from('daily_usage')
+        .select('*')
+        .eq('user_id', uId)
+        .eq('usage_date', today)
+        .single();
+
+      let drills = existing ? (existing.drills_count || 0) : 0;
+      let quizzes = existing ? (existing.quizzes_count || 0) : 0;
+
+      if (usageType === 'drill') drills++;
+      else if (usageType === 'quiz') quizzes++;
+
+      await this.client
+        .from('daily_usage')
+        .upsert({
+          user_id: uId,
+          usage_date: today,
+          drills_count: drills,
+          quizzes_count: quizzes,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id, usage_date' });
+    } catch (e) {
+      console.warn("Daily usage increment exception:", e);
     }
   },
 
@@ -77,6 +155,9 @@ CommCoach.Supabase = {
 
       if (error) console.warn("Supabase drill log warning:", error.message);
       else console.log("Supabase drill log saved successfully");
+
+      // Increment 11.2.10 Daily Usage Counter
+      this.incrementDailyUsage(userId, 'drill');
     } catch (e) {
       console.warn("Supabase drill log exception:", e);
     }
