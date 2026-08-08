@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -18,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -182,6 +184,38 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
+        fun captureFrameAndProcess(targetLang: String, jsCallbackMethod: String) {
+            runOnUiThread {
+                try {
+                    val width = myWebView.width
+                    val height = myWebView.height
+                    if (width <= 0 || height <= 0) return@runOnUiThread
+
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    val canvas = android.graphics.Canvas(bitmap)
+                    myWebView.draw(canvas)
+
+                    // Crop center reticle box area (top 10% to 55%)
+                    val startY = (height * 0.10).toInt()
+                    val boxHeight = (height * 0.45).toInt()
+                    val startX = (width * 0.05).toInt()
+                    val boxWidth = (width * 0.90).toInt()
+
+                    val croppedBitmap = Bitmap.createBitmap(bitmap, startX, startY, boxWidth, boxHeight)
+                    
+                    val byteArrayOutputStream = ByteArrayOutputStream()
+                    croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, byteArrayOutputStream)
+                    val byteArray = byteArrayOutputStream.toByteArray()
+                    val base64Image = android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP)
+
+                    processOCRImage(base64Image, targetLang, jsCallbackMethod)
+                } catch (e: Exception) {
+                    android.util.Log.e("CommCoachBridge", "Native frame capture error", e)
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun saveStats(drills: Int, quizzes: Int, streak: Int, language: String, level: String) {
             val json = JSONObject().apply {
                 put("fields", JSONObject().apply {
@@ -216,7 +250,7 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun processOCRImage(base64Data: String, targetLang: String, jsCallbackMethod: String) {
             val cleanBase64 = if (base64Data.contains(",")) base64Data.split(",")[1] else base64Data
-            val promptText = "Extract all text present in this image. Translate the extracted text into target language code '$targetLang'. Return JSON: {\"detected\":\"[Extracted text]\",\"translated\":\"[Translated text]\"}"
+            val promptText = "Perform high accuracy OCR text extraction on this image. Extract all readable text present in the image word for word. Then translate the extracted text into target language code '$targetLang'. Respond in JSON format: {\"detected\":\"[Exact extracted original text]\",\"translated\":\"[Translation in $targetLang]\"}"
             
             val partsArray = JSONArray().apply {
                 put(JSONObject().put("text", promptText))

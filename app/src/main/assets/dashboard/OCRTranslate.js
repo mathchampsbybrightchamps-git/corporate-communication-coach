@@ -1,4 +1,4 @@
-// CCOS Camera OCR Scanning & Live Translate Module - 100% Real-Time & Native TTS Engine
+// CCOS Camera OCR Scanning & Live Translate Module - 100% Real-Time & Native CORS-Free Engine
 CommCoach.OCRTranslate = {
   stream: null,
   mode: 'live',
@@ -225,20 +225,6 @@ CommCoach.OCRTranslate = {
   },
 
   captureAndProcessFrame() {
-    const video = document.getElementById('ocr-camera-preview');
-    if (video && this.canvas) {
-      const w = video.videoWidth || video.offsetWidth || 640;
-      const h = video.videoHeight || video.offsetHeight || 480;
-      this.canvas.width = w;
-      this.canvas.height = h;
-      const ctx = this.canvas.getContext('2d');
-      try {
-        ctx.drawImage(video, 0, 0, w, h);
-        this.capturedImageData = this.canvas.toDataURL('image/jpeg', 0.85);
-      } catch (e) {
-        console.warn("Canvas draw error", e);
-      }
-    }
     this.processImageData(this.capturedImageData);
   },
 
@@ -248,14 +234,23 @@ CommCoach.OCRTranslate = {
     const targetSelect = document.getElementById('ocr-target-lang');
     const targetCode = targetSelect ? targetSelect.value : 'hi';
 
-    if (!base64Image) return;
-
     if (originalEl && (originalEl.innerText === 'Align text inside frame or select a photo from gallery...' || originalEl.innerText === 'Scanning live frame for text...')) {
       originalEl.innerText = "Analyzing image & extracting text...";
       if (translatedEl) translatedEl.innerText = "Translating...";
     }
 
-    if (window.AndroidBridge && typeof window.AndroidBridge.processOCRImage === 'function') {
+    // 1. Try Native CORS-Free Frame Capture & Vision OCR via Kotlin Bridge first
+    if (window.AndroidBridge && typeof window.AndroidBridge.captureFrameAndProcess === 'function' && this.mode !== 'gallery') {
+      try {
+        window.AndroidBridge.captureFrameAndProcess(targetCode, 'onOCRResultComplete');
+        return;
+      } catch (e) {
+        console.warn("Native captureFrameAndProcess bridge call failed", e);
+      }
+    }
+
+    // 2. Try Base64 Image Processing for Gallery upload
+    if (base64Image && window.AndroidBridge && typeof window.AndroidBridge.processOCRImage === 'function') {
       try {
         window.AndroidBridge.processOCRImage(base64Image, targetCode, 'onOCRResultComplete');
         return;
@@ -272,7 +267,6 @@ CommCoach.OCRTranslate = {
     const targetSelect = document.getElementById('ocr-target-lang');
     const targetCode = targetSelect ? targetSelect.value : 'hi';
 
-    // 1. Try Native Android TextToSpeech Engine first
     if (window.AndroidBridge && typeof window.AndroidBridge.speakText === 'function') {
       try {
         window.AndroidBridge.speakText(textToSpeak, targetCode);
@@ -282,7 +276,6 @@ CommCoach.OCRTranslate = {
       }
     }
 
-    // 2. Web Speech API Fallback
     const langObj = this.languages.find(l => l.code === targetCode) || { locale: 'en-US' };
 
     if ('speechSynthesis' in window) {
