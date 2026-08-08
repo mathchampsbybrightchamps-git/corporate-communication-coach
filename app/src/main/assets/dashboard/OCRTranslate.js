@@ -1,9 +1,9 @@
-// CCOS Camera OCR Scanning & Live Translate Module
+// CCOS Camera OCR Scanning & Live Translate Module - 100% Real-Time Vision Engine
 CommCoach.OCRTranslate = {
   stream: null,
   mode: 'live',
   interval: null,
-  lastTranslatedText: "हमें विभाग के मील के पत्थर संरेखित करने होंगे।",
+  lastTranslatedText: "",
   canvas: null,
   capturedImageData: null,
 
@@ -38,114 +38,6 @@ CommCoach.OCRTranslate = {
     { code: 'kn', name: 'Kannada', locale: 'kn-IN' },
     { code: 'ml', name: 'Malayalam', locale: 'ml-IN' }
   ],
-
-  sampleCorpus: [
-    "We must align department milestones.",
-    "Optimize departmental budget resources.",
-    "Propose database migration timeline.",
-    "State core impact before details.",
-    "Reduce filler words during presentations.",
-    "Executive alignment on Q3 deliverables."
-  ],
-
-  phraseTranslations: {
-    hi: [
-      "हमें विभाग के मील के पत्थर संरेखित करने होंगे।",
-      "विभागीय बजट संसाधनों का अनुकूलन करें।",
-      "डेटाबेस माइग्रेशन समयरेखा का प्रस्ताव करें।",
-      "विवरण से पहले मुख्य प्रभाव बताएं।",
-      "प्रस्तुतियों के दौरान भराव शब्दों को कम करें।",
-      "Q3 डिलिवरेबल्स पर कार्यकारी संरेखण।"
-    ],
-    zh: [
-      "我们需要调整部门里程碑。",
-      "优化部门预算资源。",
-      "提议数据库迁移时间表。",
-      "在细节之前陈述核心影响。",
-      "减少演讲中的语气词。",
-      "Q3交付成果的高管对齐。"
-    ],
-    es: [
-      "Debemos alinear los hitos del departamento.",
-      "Optimizar los recursos presupuestarios.",
-      "Proponer cronograma de migración.",
-      "Presente el impacto principal primero.",
-      "Reduzca las muletillas en discursos.",
-      "Alineación ejecutiva en entregables Q3."
-    ],
-    fr: [
-      "Nous devons aligner les jalons du département.",
-      "Optimiser les ressources budgétaires.",
-      "Proposer le calendrier de migration.",
-      "Présentez l'impact principal d'abord.",
-      "Réduisez les mots de remplissage.",
-      "Alignement de la direction sur les livrables du T3."
-    ],
-    ar: [
-      "يجب أن نوحد معالم القسم.",
-      "تحسين موارد ميزانية القسم.",
-      "اقتراح الجدول الزمني لترحيل البيانات.",
-      "اذكر الأثر الرئيسي أولاً.",
-      "تقليل الكلمات الحشوية في العروض.",
-      "التوافق التنفيذي بشأن تسليمات الربع الثالث."
-    ],
-    bn: [
-      "আমাদের বিভাগের মাইলফলকগুলি সারিবদ্ধ করতে হবে।",
-      "বিভাগীয় বাজেট সংস্থান অপ্টিমাইজ করুন।",
-      "ডাটাবেস মাইগ্রেশন টাইমলাইন প্রস্তাব করুন।",
-      "বিস্তারিত জানানোর আগে মূল প্রভাব বর্ণনা করুন।",
-      "উপস্থাপনার সময় ফিলার শব্দ হ্রাস করুন।",
-      "Q3 ডেলিভারেবলগুলিতে নির্বাহী প্রান্তিককরণ।"
-    ],
-    pt: [
-      "Devemos alinhar os marcos do departamento.",
-      "Otimizar recursos orçamentários.",
-      "Propor cronograma de migração de banco de dados.",
-      "Declare o impacto principal antes dos detalhes.",
-      "Reduza palavras de preenchimento durante apresentações.",
-      "Alinhamento executivo nas entregas do Q3."
-    ],
-    ru: [
-      "Мы должны согласовать этапы отдела.",
-      "Оптимизировать ресурсы бюджета отдела.",
-      "Предложить график миграции базы данных.",
-      "Укажите главное влияние перед деталями.",
-      "Сократите вводные слова во время презентаций.",
-      "Согласование руководством результатов за третий квартал."
-    ],
-    de: [
-      "Wir müssen die Meilensteine der Abteilung aufeinander abstimmen.",
-      "Ressourcen des Abteilungsbudgets optimieren.",
-      "Zeitplan für die Datenbankmigration vorschlagen.",
-      "Hauptwirkung vor Details nennen.",
-      "Füllwörter bei Präsentationen reduzieren.",
-      "Vorstandsausrichtung auf Q3-Liefergegenstände."
-    ],
-    ja: [
-      "部署のマイルストーンを合わせる必要があります。",
-      "部門の予算リソースを最適化します。",
-      "データベース移行スケジューリングを提案します。",
-      "詳細の前にコアとなる影響を述べます。",
-      "プレゼンテーション中のフィラーワードを減らします。",
-      "第3四半期の成果物に関する役員との調整。"
-    ],
-    mr: [
-      "आम्हाला विभागाचे टप्पे संरेखित करावे लागतील.",
-      "विभागीय अर्थसंकल्प संसाधने अनुकूल करा.",
-      "डेटाबेस स्थलांतर वेळापत्रकाचा प्रस्ताव द्या.",
-      "तपशीलापूर्वी मुख्य प्रभाव सांगा.",
-      "सादरीकरणादरम्यान भरलेले शब्द कमी करा.",
-      "Q3 वितरणावर कार्यकारी संरेखन."
-    ],
-    te: [
-      "మేము విభాగాన్ని సమలేఖనం చేయాలి.",
-      "విభాగాల బడ్జెట్ వనరులను ఆప్టిమైజ్ చేయండి.",
-      "డేటాబేస్ మైగ్రేషన్ సమయక్రమాన్ని ప్రతిపాదించండి.",
-      "వివరాలకు ముందు ప్రధాన ప్రభావాన్ని చెప్పండి.",
-      "ప్రజెంటేషన్ల సమయంలో ఫిల్లర్ పదాలను తగ్గించండి.",
-      "Q3 డెలివరీలపై ఎగ్జిక్యూటివ్ అమరిక."
-    ]
-  },
 
   init() {
     const backBtn = document.getElementById('btn-ocr-back');
@@ -246,13 +138,12 @@ CommCoach.OCRTranslate = {
         if (this.capturedImageData) {
           this.processImageData(this.capturedImageData);
         } else {
-          this.performTranslation(true);
+          this.captureAndProcessFrame();
         }
       });
     }
 
     this.canvas = document.createElement('canvas');
-    this.performTranslation(true);
   },
 
   setActiveModeChip(activeChip) {
@@ -310,8 +201,6 @@ CommCoach.OCRTranslate = {
       if (this.mode === 'live') {
         this.startLiveLoop();
       }
-    } else {
-      this.performTranslation();
     }
   },
 
@@ -327,12 +216,12 @@ CommCoach.OCRTranslate = {
 
   startLiveLoop() {
     clearInterval(this.interval);
-    this.performTranslation();
+    this.captureAndProcessFrame();
     this.interval = setInterval(() => {
       if (this.mode === 'live') {
         this.captureAndProcessFrame();
       }
-    }, 4000);
+    }, 3000);
   },
 
   captureAndProcessFrame() {
@@ -345,7 +234,7 @@ CommCoach.OCRTranslate = {
       const ctx = this.canvas.getContext('2d');
       try {
         ctx.drawImage(video, 0, 0, w, h);
-        this.capturedImageData = this.canvas.toDataURL('image/jpeg');
+        this.capturedImageData = this.canvas.toDataURL('image/jpeg', 0.85);
       } catch (e) {
         console.warn("Canvas draw error", e);
       }
@@ -359,59 +248,19 @@ CommCoach.OCRTranslate = {
     const targetSelect = document.getElementById('ocr-target-lang');
     const targetCode = targetSelect ? targetSelect.value : 'hi';
 
-    if (originalEl) originalEl.innerText = "Analyzing image & extracting text...";
-    if (translatedEl) translatedEl.innerText = "Translating extracted text...";
+    if (!base64Image) return;
 
-    if (base64Image && window.AndroidBridge && typeof window.AndroidBridge.processOCRImage === 'function') {
+    if (originalEl && originalEl.innerText === 'Align text inside frame or select a photo from gallery...') {
+      originalEl.innerText = "Scanning live frame for text...";
+      if (translatedEl) translatedEl.innerText = "Translating...";
+    }
+
+    if (window.AndroidBridge && typeof window.AndroidBridge.processOCRImage === 'function') {
       try {
         window.AndroidBridge.processOCRImage(base64Image, targetCode, 'onOCRResultComplete');
-        return;
       } catch (e) {
         console.warn("Native processOCRImage bridge call failed", e);
       }
-    }
-
-    // Fallback: Perform offline translation matching
-    this.performTranslation();
-  },
-
-  phraseIdx: 0,
-  performTranslation(preserveText = false) {
-    const originalEl = document.getElementById('ocr-text-original');
-    const translatedEl = document.getElementById('ocr-text-translated');
-    const targetSelect = document.getElementById('ocr-target-lang');
-    const pronounceBtn = document.getElementById('btn-ocr-pronounce');
-
-    if (!originalEl || !translatedEl) return;
-
-    const targetCode = targetSelect ? targetSelect.value : 'hi';
-
-    if (!preserveText) {
-      this.phraseIdx = (this.phraseIdx + 1) % this.sampleCorpus.length;
-    }
-
-    const detectedText = this.sampleCorpus[this.phraseIdx];
-    originalEl.innerText = detectedText;
-
-    // Multi-lingual Translation Lookup
-    let translatedText = "";
-    if (targetCode === 'en') {
-      translatedText = detectedText;
-    } else {
-      const langPack = this.phraseTranslations[targetCode];
-      if (langPack && langPack[this.phraseIdx]) {
-        translatedText = langPack[this.phraseIdx];
-      } else {
-        const langObj = this.languages.find(l => l.code === targetCode) || { name: targetCode.toUpperCase() };
-        translatedText = `[${langObj.name}] ${detectedText}`;
-      }
-    }
-
-    translatedEl.innerText = translatedText;
-    this.lastTranslatedText = translatedText;
-
-    if (pronounceBtn) {
-      pronounceBtn.disabled = false;
     }
   },
 
@@ -466,6 +315,5 @@ window.onOCRResultComplete = function(respStr) {
     }
   } catch (e) {
     console.error("OCR result parse failed", e);
-    CommCoach.OCRTranslate.performTranslation();
   }
 };
