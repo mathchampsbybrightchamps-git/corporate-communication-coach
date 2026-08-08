@@ -221,7 +221,7 @@ CommCoach.OCRTranslate = {
       if (this.mode === 'live') {
         this.captureAndProcessFrame();
       }
-    }, 3000);
+    }, 800);
   },
 
   captureAndProcessFrame() {

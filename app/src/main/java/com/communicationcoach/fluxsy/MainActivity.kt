@@ -203,8 +203,13 @@ class MainActivity : AppCompatActivity() {
 
                     val croppedBitmap = Bitmap.createBitmap(bitmap, startX, startY, boxWidth, boxHeight)
                     
+                    // Ultra-fast scale down for sub-millisecond encoding & instant vision processing
+                    val scaleWidth = 480
+                    val scaleHeight = (boxHeight * (480.0 / boxWidth)).toInt()
+                    val scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, scaleWidth, scaleHeight, true)
+
                     val byteArrayOutputStream = ByteArrayOutputStream()
-                    croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, byteArrayOutputStream)
+                    scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 60, byteArrayOutputStream)
                     val byteArray = byteArrayOutputStream.toByteArray()
                     val base64Image = android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP)
 
