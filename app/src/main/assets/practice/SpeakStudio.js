@@ -68,6 +68,7 @@ CommCoach.SpeakStudio = {
     if (timerLabel) timerLabel.innerText = "00:00";
     if (textLabel) textLabel.innerText = "Listening...";
     if (recordBtn) recordBtn.classList.add('recording');
+    this.setNavMicRecording(true);
 
     if (this.recognition) {
       try { this.recognition.start(); } catch (e) { console.warn(e); }
@@ -89,6 +90,7 @@ CommCoach.SpeakStudio = {
     const recordBtn = document.getElementById('btn-record-action');
     this.isRecording = false;
     if (recordBtn) recordBtn.classList.remove('recording');
+    this.setNavMicRecording(false);
     clearInterval(this.timer);
 
     if (this.recognition) {
@@ -108,6 +110,14 @@ CommCoach.SpeakStudio = {
     if (CommCoach.FeedbackSummary) {
       CommCoach.FeedbackSummary.showAnalysis(this.transcript, this.seconds, scenarioTag);
     }
+  },
+
+  /** Mirrors recording state onto the bottom-nav mic button across every screen. */
+  setNavMicRecording(isRecording) {
+    document.querySelectorAll('.nav-item-mic').forEach(btn => {
+      if (isRecording) btn.classList.add('recording');
+      else btn.classList.remove('recording');
+    });
   },
 
   openChallenge(challengeData) {

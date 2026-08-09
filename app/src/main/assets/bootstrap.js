@@ -47,6 +47,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (CommCoach.VocabDict) CommCoach.VocabDict.init();
   if (CommCoach.MyAccount) CommCoach.MyAccount.init();
   if (CommCoach.MeetingRecorder) CommCoach.MeetingRecorder.init();
+  if (CommCoach.LearningHub) CommCoach.LearningHub.init();
   if (CommCoach.Nudges) CommCoach.Nudges.init();
 
   // Route URL hashes if any

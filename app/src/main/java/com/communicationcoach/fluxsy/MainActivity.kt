@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -21,9 +22,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import java.io.ByteArrayOutputStream
-import java.io.OutputStreamWriter
-import java.net.HttpURLConnection
-import java.net.URL
 import kotlin.concurrent.thread
 import org.json.JSONObject
 import org.json.JSONArray
@@ -36,6 +34,10 @@ class MainActivity : AppCompatActivity() {
     private var textToSpeech: TextToSpeech? = null
     private val PERMISSION_REQUEST_CODE = 101
     private val CHANNEL_ID = "ccos_nudge_channel"
+
+    // Name of the JS global that receives transcribed meeting chunks. Recording itself
+    // lives in MeetingCaptureService so it survives screen lock.
+    private var meetingCallbackMethod: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,7 +107,52 @@ class MainActivity : AppCompatActivity() {
         myWebView.saveState(outState)
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Replay anything the service transcribed while the screen was off or the UI was gone.
+        if (meetingCallbackMethod != null) {
+            attachMeetingListener()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Detach so results buffer instead of being pushed into a WebView that may be
+        // suspended. They are flushed on the next onResume.
+        MeetingCaptureService.listener = null
+    }
+
+    /**
+     * Routes transcribed chunks into the WebView and drains anything buffered while the
+     * UI was detached.
+     */
+    private fun attachMeetingListener() {
+        val callback = meetingCallbackMethod ?: return
+
+        MeetingCaptureService.listener = { result ->
+            runOnUiThread { pushToJs(callback, result) }
+        }
+
+        MeetingCaptureService.drainPending().forEach { buffered ->
+            runOnUiThread { pushToJs(callback, buffered) }
+        }
+    }
+
+    /** Base64-hops a payload into a JS global, avoiding all string-escaping hazards. */
+    private fun pushToJs(jsCallbackMethod: String, payload: String) {
+        val b64 = android.util.Base64.encodeToString(
+            payload.toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP
+        )
+        myWebView.evaluateJavascript(
+            "javascript:if (typeof window['$jsCallbackMethod'] === 'function') " +
+                "{ window['$jsCallbackMethod'](decodeURIComponent(escape(atob('$b64')))); }",
+            null
+        )
+    }
+
     override fun onDestroy() {
+        MeetingCaptureService.listener = null
+
         if (textToSpeech != null) {
             textToSpeech?.stop()
             textToSpeech?.shutdown()
@@ -253,31 +300,54 @@ class MainActivity : AppCompatActivity() {
             }
 
             val url = "https://firestore.googleapis.com/v1/projects/corporate-comm-coach/databases/(default)/documents/users/sample_user_id"
-            sendPostRequest(url, json.toString()) { response ->
+            GeminiClient.post(url, json.toString()) { response ->
                 android.util.Log.d("CommCoachBridge", "Firestore REST Response: $response")
             }
         }
 
+        /**
+         * Reports whether a Gemini API key was compiled into the build, so the web layer
+         * can show an actionable message instead of failing silently.
+         */
+        @JavascriptInterface
+        fun isAiConfigured(): Boolean = OpenAIClient.isConfigured() || GeminiClient.isConfigured()
+
         @JavascriptInterface
         fun getAICoaching(prompt: String, jsCallbackMethod: String) {
-            val json = JSONObject().apply {
-                put("contents", JSONObject().apply {
-                    put("parts", JSONObject().put("text", prompt))
-                })
-            }
+            if (OpenAIClient.isConfigured()) {
+                OpenAIClient.generateText(prompt) { response ->
+                    sendBase64ToJs(jsCallbackMethod, response)
+                }
+            } else {
+                val partsArray = JSONArray().apply {
+                    put(JSONObject().put("text", prompt))
+                }
+                val contentsArray = JSONArray().apply {
+                    put(JSONObject().put("parts", partsArray))
+                }
+                val json = JSONObject().apply {
+                    put("contents", contentsArray)
+                }
 
-            val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-            sendPostRequest(url, json.toString()) { response ->
-                sendBase64ToJs(jsCallbackMethod, response)
+                GeminiClient.post(GeminiClient.ENDPOINT, json.toString()) { response ->
+                    sendBase64ToJs(jsCallbackMethod, response)
+                }
             }
         }
 
         @JavascriptInterface
         fun processOCRImage(base64Data: String, targetLang: String, jsCallbackMethod: String) {
+            if (OpenAIClient.isConfigured()) {
+                OpenAIClient.processVisionOCR(base64Data, targetLang) { response ->
+                    sendBase64ToJs(jsCallbackMethod, response)
+                }
+                return
+            }
+
             try {
                 val cleanBase64 = if (base64Data.contains(",")) base64Data.split(",")[1] else base64Data
                 
-                // Decode & Auto-compress large images to max 1024x1024 to prevent Gemini API timeouts
+                // Decode & Auto-compress large images to max 1024x1024 to prevent Vision API timeouts
                 val decodedBytes = android.util.Base64.decode(cleanBase64, android.util.Base64.DEFAULT)
                 val originalBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
 
@@ -313,8 +383,7 @@ class MainActivity : AppCompatActivity() {
                     put("contents", contentsArray)
                 }
 
-                val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-                sendPostRequest(url, json.toString()) { response ->
+                GeminiClient.post(GeminiClient.ENDPOINT, json.toString()) { response ->
                     sendBase64ToJs(jsCallbackMethod, response)
                 }
             } catch (e: Exception) {
@@ -326,6 +395,61 @@ class MainActivity : AppCompatActivity() {
                 sendBase64ToJs(jsCallbackMethod, errObj.toString())
             }
         }
+
+        /**
+         * Supplies the running speaker roster and language hints. Read by the capture
+         * service when building each chunk's prompt, so speaker labels stay consistent.
+         */
+        @JavascriptInterface
+        fun updateMeetingContext(contextJson: String) {
+            MeetingCaptureService.contextJson = contextJson
+        }
+
+        /**
+         * Starts meeting capture in a foreground service so recording survives screen lock
+         * and app backgrounding. Results arrive at [jsCallbackMethod] as each chunk completes.
+         */
+        @JavascriptInterface
+        fun startMeetingCapture(chunkSeconds: Int, jsCallbackMethod: String) {
+            if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                sendBase64ToJs(jsCallbackMethod, GeminiClient.buildErrorEnvelope("Microphone permission denied."))
+                return
+            }
+
+            if (!GeminiClient.isConfigured()) {
+                sendBase64ToJs(jsCallbackMethod, GeminiClient.buildErrorEnvelope(
+                    "Gemini API key missing. Add GEMINI_API_KEY to local.properties and rebuild."
+                ))
+                return
+            }
+
+            meetingCallbackMethod = jsCallbackMethod
+            attachMeetingListener()
+
+            val intent = Intent(this@MainActivity, MeetingCaptureService::class.java).apply {
+                action = MeetingCaptureService.ACTION_START
+                putExtra(MeetingCaptureService.EXTRA_CHUNK_SECONDS, chunkSeconds)
+            }
+            ContextCompat.startForegroundService(this@MainActivity, intent)
+        }
+
+        @JavascriptInterface
+        fun stopMeetingCapture() {
+            val intent = Intent(this@MainActivity, MeetingCaptureService::class.java).apply {
+                action = MeetingCaptureService.ACTION_STOP
+            }
+            try {
+                startService(intent)
+            } catch (e: Exception) {
+                android.util.Log.w("CommCoachBridge", "Stop capture failed", e)
+            }
+        }
+
+        /** True when the service is still recording, e.g. after the UI was recreated. */
+        @JavascriptInterface
+        fun isMeetingCaptureRunning(): Boolean = MeetingCaptureService.isRunning
 
         @JavascriptInterface
         fun verifyLinkedIn(jsCallbackMethod: String) {
@@ -430,32 +554,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        private fun sendPostRequest(urlStr: String, jsonBody: String, callback: (String) -> Unit) {
-            thread {
-                try {
-                    val url = URL(urlStr)
-                    val conn = url.openConnection() as HttpURLConnection
-                    conn.requestMethod = "POST"
-                    conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
-                    conn.connectTimeout = 30000 // 30-second timeout mitigation (Issue 1)
-                    conn.readTimeout = 30000
-                    conn.doOutput = true
-                    
-                    val os = conn.outputStream
-                    val writer = OutputStreamWriter(os, "UTF-8")
-                    writer.write(jsonBody)
-                    writer.flush()
-                    writer.close()
-                    os.close()
-
-                    val responseCode = conn.responseCode
-                    val stream = if (responseCode in 200..299) conn.inputStream else conn.errorStream
-                    val responseText = stream.bufferedReader().use { it.readText() }
-                    callback(responseText)
-                } catch (e: Exception) {
-                    callback("Exception: ${e.message}")
-                }
-            }
-        }
     }
 }

@@ -402,20 +402,7 @@
           </div>
         </div>
 
-        <nav class="bottom-nav">
-          <button class="nav-item active" data-target="screen-dashboard">
-            <i data-feather="grid"></i>
-            <span data-i18n="nav_daily">Daily</span>
-          </button>
-          <button class="nav-item" data-target="screen-library">
-            <i data-feather="book"></i>
-            <span data-i18n="nav_library">Library</span>
-          </button>
-          <button class="nav-item" data-target="screen-profile">
-            <i data-feather="user"></i>
-            <span data-i18n="nav_profile">Profile</span>
-          </button>
-        </nav>
+        <nav class="bottom-nav" data-bottom-nav></nav>
       </div>
     </section>
 
@@ -646,20 +633,7 @@
           <!-- Drill items loaded dynamically -->
         </div>
 
-        <nav class="bottom-nav">
-          <button class="nav-item" data-target="screen-dashboard">
-            <i data-feather="grid"></i>
-            <span data-i18n="nav_daily">Daily</span>
-          </button>
-          <button class="nav-item active" data-target="screen-library">
-            <i data-feather="book"></i>
-            <span data-i18n="nav_library">Library</span>
-          </button>
-          <button class="nav-item" data-target="screen-profile">
-            <i data-feather="user"></i>
-            <span data-i18n="nav_profile">Profile</span>
-          </button>
-        </nav>
+        <nav class="bottom-nav" data-bottom-nav></nav>
       </div>
     </section>
 
@@ -715,20 +689,7 @@
           </div>
         </div>
 
-        <nav class="bottom-nav">
-          <button class="nav-item" data-target="screen-dashboard">
-            <i data-feather="grid"></i>
-            <span data-i18n="nav_daily">Daily</span>
-          </button>
-          <button class="nav-item" data-target="screen-library">
-            <i data-feather="book"></i>
-            <span data-i18n="nav_library">Library</span>
-          </button>
-          <button class="nav-item active" data-target="screen-profile">
-            <i data-feather="user"></i>
-            <span data-i18n="nav_profile">Profile</span>
-          </button>
-        </nav>
+        <nav class="bottom-nav" data-bottom-nav></nav>
       </div>
     </section>
 
@@ -806,8 +767,13 @@
             <!-- Hidden File Input for Gallery Selection -->
             <input type="file" id="ocr-file-input" accept="image/*" style="display: none;">
             <!-- Overlay scanning reticle -->
-            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 55%; border: 2px dashed var(--primary); border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); z-index: 2;"></div>
+            <div id="ocr-reticle" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 55%; border: 2px dashed var(--primary); border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); z-index: 2;"></div>
           </div>
+
+          <!-- Scanner status / diagnostics line -->
+          <p id="ocr-status" class="font-12 text-muted" style="margin-top: 8px; text-align: center; min-height: 16px;">
+            Starting camera...
+          </p>
 
           <!-- Controls Mode & Target Select -->
           <div class="flex-row justify-between items-center pad-top-16 gap-8">
@@ -963,6 +929,56 @@
       </div>
     </section>
 
+    <!-- Screen 19: Learning Hub -->
+    <section id="screen-learning" class="screen">
+      <div class="flex-column full-height justify-between">
+        <header class="dashboard-header pad-horizontal-24">
+          <span class="app-title" data-i18n="nav_learning">Learning</span>
+        </header>
+
+        <div class="dashboard-scroll-content pad-24" style="overflow-y: auto;">
+          <p class="section-subtitle" style="margin-bottom: 16px;">
+            Reference material to sharpen the words you reach for under pressure.
+          </p>
+
+          <div class="action-card" id="learn-card-jargon" style="margin-bottom: 12px;">
+            <div class="flex-row justify-between items-center">
+              <span class="level-tag">308 Terms</span>
+              <i data-feather="chevron-right" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+            </div>
+            <h3 class="card-heading pad-top-8">Corporate Jargon Dictionary</h3>
+            <p class="level-tagline">
+              What each buzzword really signals, when it helps, and the plain-language alternative.
+            </p>
+          </div>
+
+          <div class="action-card" id="learn-card-vocab" style="margin-bottom: 12px;">
+            <div class="flex-row justify-between items-center">
+              <span class="level-tag">High-Impact</span>
+              <i data-feather="chevron-right" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+            </div>
+            <h3 class="card-heading pad-top-8">Corporate Vocabulary Dictionary</h3>
+            <p class="level-tagline">
+              Boardroom vocabulary with real executive usage examples.
+            </p>
+          </div>
+
+          <div class="action-card" id="learn-card-quiz" style="margin-bottom: 12px;">
+            <div class="flex-row justify-between items-center">
+              <span class="level-tag">Daily</span>
+              <i data-feather="chevron-right" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+            </div>
+            <h3 class="card-heading pad-top-8">Daily Quiz</h3>
+            <p class="level-tagline">
+              Check your grasp of the STAR, PREP and Pyramid frameworks.
+            </p>
+          </div>
+        </div>
+
+        <nav class="bottom-nav" data-bottom-nav></nav>
+      </div>
+    </section>
+
     <!-- Dynamic Dialog Overlay: Pitch Customizer Dialog -->
     <dialog class="modal-dialog" id="pitch-customizer-dialog">
       <div class="flex-column gap-16 pad-24">
@@ -1018,29 +1034,21 @@
             </div>
 
             <div style="margin-bottom: 12px;">
-              <span class="text-muted font-12">Multilingual Recognition Mode</span>
-              <select id="select-meeting-lang" class="form-input" style="margin-top: 4px; background: var(--bg-surface-elevated); color: var(--text-main);">
-                <option value="multilingual" selected>Multilingual Code-Switching (99.99% Accuracy: English + Hindi + Tamil + Spanish)</option>
-                <option value="en-US">English Only</option>
-                <option value="hi-IN">Hindi + English (Hinglish)</option>
-                <option value="es-ES">Spanish + English (Spanglish)</option>
-                <option value="ta-IN">Tamil + English</option>
-              </select>
+              <span class="text-muted font-12">Expected Languages (optional hint)</span>
+              <input type="text" id="input-meeting-langhint" class="form-input" placeholder="e.g. Hindi, Bhojpuri, English" style="margin-top: 4px;">
+              <p class="font-11 text-muted" style="margin-top: 4px; line-height: 1.5;">
+                Languages are detected automatically. A hint only helps the model resolve
+                closely related regional languages (Bhojpuri vs Hindi, Maithili vs Bengali).
+              </p>
             </div>
 
-            <div style="margin-bottom: 12px;">
-              <span class="text-muted font-12">Register Meeting Speakers</span>
-              <div class="flex-row gap-8" style="margin-top: 4px;">
-                <input type="text" id="input-speaker-name" class="form-input" placeholder="e.g. Sarah (Product VP)" style="flex: 1;">
-                <button id="btn-add-speaker" class="btn btn-secondary" style="padding: 8px 16px;">Add</button>
-              </div>
+            <div class="pad-vertical-8" style="border-top: 1px solid var(--border-color); margin-top: 12px;">
+              <span class="text-muted font-12">Speaker Detection</span>
+              <p class="font-12 text-main" style="margin-top: 4px; line-height: 1.5;">
+                Speakers are identified automatically from their voices. No registration needed &mdash;
+                you can rename them once they appear.
+              </p>
             </div>
-
-            <!-- Active Speaker Badges List -->
-            <div id="meeting-speakers-chips" class="flex-row gap-8" style="flex-wrap: wrap; margin-top: 8px;">
-              <!-- Dynamically populated chips -->
-            </div>
-            <p class="font-12 text-muted" style="margin-top: 8px;" id="speaker-count-label">Speakers Identified: 0</p>
           </div>
 
           <!-- Active Recording & Live Diarized Transcript -->
@@ -1050,12 +1058,13 @@
                 <span class="font-13 font-700" style="color: var(--primary);" id="active-meeting-topic">Meeting in Progress</span>
                 <span class="timer-label" id="meeting-timer" style="font-size: 14px;">00:00</span>
               </div>
-              <p class="font-12 text-muted" id="active-speaker-status" style="margin-top: 4px;">Select active speaker speaking now:</p>
-              
-              <!-- Live Speaker Switcher Bar -->
+              <p class="font-12 text-muted" id="active-speaker-status" style="margin-top: 4px;">Listening &mdash; detecting speakers automatically...</p>
+
+              <!-- Auto-discovered speaker roster (tap a name to rename) -->
               <div id="meeting-speaker-switcher" class="flex-row gap-8" style="flex-wrap: wrap; margin-top: 8px;">
-                <!-- Speaker buttons -->
+                <!-- Populated as voices are identified -->
               </div>
+              <p class="font-11 text-muted" style="margin-top: 6px;" id="speaker-count-label">Speakers detected: 0</p>
             </div>
 
             <div class="transcription-monitor pad-12" style="max-height: 240px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
@@ -1147,6 +1156,7 @@
   <script src="dashboard/JargonDict.js"></script>
   <script src="dashboard/VocabDict.js"></script>
   <script src="dashboard/MeetingRecorder.js"></script>
+  <script src="dashboard/LearningHub.js"></script>
   
   <!-- Speak Studio Practice & Evaluator tabs -->
   <script src="practice/SpeakStudio.js"></script>

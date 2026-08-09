@@ -55,6 +55,7 @@ const translations = {
     library_desc: "Browse 10 custom business case drills",
     nav_daily: "Daily",
     nav_library: "Library",
+    nav_learning: "Learning",
     nav_profile: "Profile",
     paywall_title: "Upgrade Tier",
     paywall_heading: "Unlock Unlimited Gym Drills",
